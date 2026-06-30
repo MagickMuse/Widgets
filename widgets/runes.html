@@ -12,180 +12,205 @@
     --dark:#2a1f1f; --darker:#3d2b2b; --muted:#c9a98f; --notion:#E03E3E;
   }
   *{box-sizing:border-box;}
-  html,body{background:transparent;}
-  body{margin:0;font-family:'EB Garamond',serif;color:var(--cream);padding:20px;min-height:100vh;display:flex;justify-content:center;}
-  .wrap{max-width:420px;width:100%;text-align:center;}
+  html,body{background:#1e1515;}
+  body{margin:0;font-family:'EB Garamond',serif;color:var(--cream);padding:24px 16px;min-height:100vh;display:flex;justify-content:center;}
+  .wrap{max-width:440px;width:100%;text-align:center;}
   h1{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;}
-  .sub{color:var(--muted);font-size:.8rem;font-style:italic;margin-bottom:22px;}
-  .stage{min-height:300px;display:flex;align-items:center;justify-content:center;}
-  .rune-back{
-    width:160px;height:160px;border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, var(--darker), var(--dark));
-    border:2px solid var(--maroon);display:flex;align-items:center;justify-content:center;
-    cursor:pointer;box-shadow:0 6px 28px rgba(0,0,0,.4);
-    font-size:2.4rem;color:var(--rose);transition:transform .15s,box-shadow .15s;
+  .sub{color:var(--muted);font-size:.8rem;font-style:italic;margin-bottom:28px;}
+
+  /* ── Stone Grid ──────────────────────────────────────── */
+  .stones-area{
+    display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+    gap:14px;padding:10px 0 6px;
   }
-  .rune-back:hover{transform:scale(1.04);box-shadow:0 8px 32px rgba(204,83,83,.25);}
-  .rune-back span{font-family:'Cinzel Decorative',serif;}
-  .result{display:none;}
-  .result.show{display:block;}
-  .rune-glyph{font-size:4.5rem;color:var(--notion);margin-bottom:8px;display:block;text-shadow:0 0 24px rgba(224,62,62,.3);}
+  .stone-wrap{
+    perspective:800px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .stone-inner{
+    width:var(--sw);height:var(--sh);
+    transform-style:preserve-3d;
+    transition:transform .7s cubic-bezier(.4,0,.2,1);
+    position:relative;
+  }
+  .stone-inner.flipped{transform:rotateY(180deg);}
+  .stone-face{
+    position:absolute;inset:0;
+    backface-visibility:hidden;
+    border-radius:var(--br);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .stone-back{
+    background:radial-gradient(ellipse at 32% 28%, #635856, #3a2f2d 55%, #1e1715);
+    box-shadow:
+      inset 0 2px 5px rgba(255,255,255,.07),
+      inset 0 -3px 6px rgba(0,0,0,.55),
+      0 5px 14px rgba(0,0,0,.65);
+    transform:rotate(var(--rot));
+    transition:box-shadow .2s,transform .2s;
+  }
+  .stone-wrap:hover .stone-back{
+    box-shadow:
+      inset 0 2px 5px rgba(255,255,255,.07),
+      inset 0 -3px 6px rgba(0,0,0,.55),
+      0 8px 22px rgba(224,62,62,.3);
+    transform:rotate(var(--rot)) translateY(-6px);
+  }
+  .stone-front{
+    transform:rotateY(180deg);
+    background:radial-gradient(ellipse at 38% 35%, #4a3535, #2a1f1f 60%, #1a1212);
+    box-shadow:
+      inset 0 1px 4px rgba(255,255,255,.05),
+      inset 0 -2px 5px rgba(0,0,0,.5),
+      0 5px 14px rgba(0,0,0,.65);
+  }
+  .stone-front .glyph{
+    font-size:var(--gs);
+    color:rgba(224,62,62,.85);
+    text-shadow:0 0 12px rgba(224,62,62,.25), inset 0 1px 2px rgba(0,0,0,.4);
+    line-height:1;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.6));
+  }
+  .prompt{color:var(--muted);font-size:.85rem;margin-top:4px;font-style:italic;}
+
+  /* ── Rune Result ─────────────────────────────────────── */
+  #resultStage{display:none;}
+  .rune-hero{margin-bottom:16px;}
+  .rune-glyph-big{font-size:5rem;color:var(--notion);display:block;text-shadow:0 0 28px rgba(224,62,62,.3);line-height:1;margin-bottom:8px;}
   .rune-name{font-family:'Cinzel Decorative',serif;font-size:1.4rem;letter-spacing:.04em;color:var(--cream);}
-  .rune-aka{color:var(--muted);font-size:.8rem;font-style:italic;margin-bottom:4px;}
-  .rune-sound{color:var(--notion);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;}
-  .card{background:linear-gradient(160deg,var(--darker),var(--dark));border:1px solid var(--maroon);border-radius:10px;padding:16px 18px;margin-top:10px;text-align:left;}
-  .card h3{margin:0 0 6px;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--notion);font-weight:normal;}
-  .card p{margin:0;font-size:.95rem;line-height:1.55;}
-  .again{margin-top:18px;background:transparent;border:1px solid var(--maroon);color:var(--cream);padding:8px 18px;border-radius:6px;cursor:pointer;font-family:'EB Garamond',serif;font-size:.85rem;letter-spacing:.03em;transition:background .15s;}
-  .again:hover{background:var(--notion);border-color:var(--notion);}
-  .prompt{color:var(--muted);font-size:.85rem;margin-top:14px;}
+  .rune-aka{color:var(--muted);font-size:.8rem;font-style:italic;margin:4px 0;}
+  .rune-sound{color:var(--notion);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;}
+  .meaning-card{background:linear-gradient(160deg,var(--darker),var(--dark));border:1px solid var(--maroon);border-radius:10px;padding:16px 18px;text-align:left;margin-bottom:16px;}
+  .meaning-card h3{margin:0 0 8px;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--notion);font-weight:normal;}
+  .meaning-card p{margin:0;font-size:.95rem;line-height:1.6;color:var(--cream);}
+  .again-btn{
+    background:transparent;border:1px solid var(--maroon);color:var(--cream);
+    padding:9px 24px;border-radius:6px;cursor:pointer;
+    font-family:'EB Garamond',serif;font-size:.88rem;letter-spacing:.03em;
+    transition:background .15s,border-color .15s;
+  }
+  .again-btn:hover{background:var(--notion);border-color:var(--notion);}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Rune Pull</h1>
   <div class="sub">Elder Futhark &middot; draw a single rune for guidance</div>
-  <div class="stage">
-    <div id="pullStage">
-      <div>
-        <div class="rune-back" id="runeBack"><span>?</span></div>
-        <div class="prompt">Tap the stone to draw</div>
-      </div>
-    </div>
-    <div class="result" id="resultStage">
-      <span class="rune-glyph" id="glyph"></span>
+
+  <div id="pullStage">
+    <div class="stones-area" id="stonesArea"></div>
+    <p class="prompt">Choose a stone</p>
+  </div>
+
+  <div id="resultStage">
+    <div class="rune-hero">
+      <span class="rune-glyph-big" id="glyph"></span>
       <div class="rune-name" id="rname"></div>
       <div class="rune-aka" id="raka"></div>
       <div class="rune-sound" id="rsound"></div>
-      <div class="card">
-        <h3>Meaning</h3>
-        <p id="rmeaning"></p>
-      </div>
-      <button class="again" id="again">Draw again</button>
     </div>
+    <div class="meaning-card">
+      <h3>Meaning</h3>
+      <p id="rmeaning"></p>
+    </div>
+    <button class="again-btn" id="again">Draw again</button>
   </div>
 </div>
 
 <script>
 const RUNES = [
-  {
-    glyph:'ᚠ', name:'Fehu', aka:'Feoh, Faíhu, Fé', sound:'F',
-    meaning:'Meaning: mobile property, cattle, money. The modern English word "fee" derives from this root. First rune of the Elder Futhark and the first ætt.'
-  },
-  {
-    glyph:'ᚢ', name:'Uruz', aka:'Úrus, Úr', sound:'U / V',
-    meaning:'Meaning: the aurochs, the primal fertilizing essence. Old Norse úr also means drizzle or rain. Second rune of the Elder Futhark and the first ætt.'
-  },
-  {
-    glyph:'ᚦ', name:'Thurisaz', aka:'Thiuth, Thorn, Thurs', sound:'Th',
-    meaning:'Meaning: the strong one, giant. The thorn that protects the rose. Third rune of the Elder Futhark and the first ætt.'
-  },
-  {
-    glyph:'ᚨ', name:'Ansuz', aka:'Ansus, Ós, Áss', sound:'A',
-    meaning:'Meaning: a god, ancestral god. The stave of Odin as the numinous god of magick and ecstasy. Fourth rune of the Elder Futhark and the first ætt.'
-  },
-  {
-    glyph:'ᚱ', name:'Raidho', aka:'Raidha, Rádh, Reidh', sound:'R',
-    meaning:'Meaning: wagon, riding, chariot. The solar wagon and the chariot of Thor. Fifth rune of the Elder Futhark and the first ætt.'
-  },
-  {
-    glyph:'ᚲ', name:'Kenaz', aka:'Kusma, Cén, Kaun', sound:'C / K / Q / X',
-    meaning:'Meaning: torch, controlled fire, cremation. The Gothic and Old Norse names (swelling, sore) are secondary meanings relating to internal fire and inflammation. Sixth rune of the Elder Futhark and the first ætt.'
-  },
-  {
-    glyph:'ᚷ', name:'Gebo', aka:'Giba, Gyfu, Gipt', sound:'G',
-    meaning:'Meaning: gift, hospitality, that which is exchanged between gods and mortals. The holy mystery of the two in one. Seventh rune of the Elder Futhark and the first ætt.'
-  },
-  {
-    glyph:'ᚹ', name:'Wunjo', aka:'Winja, Wynn, Vend', sound:'V / W',
-    meaning:'Meaning: joy, pleasure, delight. The relationship of beings descended from the same source. Eighth and final rune of the first ætt.'
-  },
-  {
-    glyph:'ᚺ', name:'Hagaiaz', aka:'Hagl, Hægl, Hagall', sound:'H',
-    meaning:'Meaning: hail, the icy egg or seed of primal cosmic life and pattern. The rune mother, from which all other runic forms may be derived. Ninth rune of the Elder Futhark and first rune of the second ætt.'
-  },
-  {
-    glyph:'ᚾ', name:'Nauthiz', aka:'Nauths, Nýd, Naudhr', sound:'N',
-    meaning:'Meaning: need, fatalistic compulsion, need-fire and deliverance from distress. The cosmic force of resistance necessary to the formulation of ørlög. Tenth rune of the Elder Futhark and second rune of the second ætt.'
-  },
-  {
-    glyph:'ᛁ', name:'Isaz', aka:'Eis, Is, Íss', sound:'I',
-    meaning:'Meaning: ice, primal matter/antimatter. The antipolar force to Fehu. Eleventh rune of the Elder Futhark and third rune of the second ætt.'
-  },
-  {
-    glyph:'ᛃ', name:'Jera', aka:'Jér, Gér, Ár', sound:'J / Y',
-    meaning:'Meaning: the good year, harvest. Life cycle, cycle of the sun. One of the two central runes of the Elder Futhark. Twelfth rune and fourth rune of the second ætt.'
-  },
-  {
-    glyph:'ᛇ', name:'Eiwaz', aka:'Eihwas, Éoh, Ihwar', sound:'Ei',
-    meaning:'Meaning: yew tree, the tree of life and death, Yggdrasill. The vertical axis of the world, the numinous axis connecting heaven, earth, and underworld. Thirteenth rune of the Elder Futhark and fifth rune of the second ætt.'
-  },
-  {
-    glyph:'ᛈ', name:'Pertho', aka:'Pairthra, Peordh', sound:'P',
-    meaning:'Meaning: device for casting lots, dice cup. Divination as an indicator of ørlög, the primal laws. The rune of the Nornir and cosmic becoming. Fourteenth rune of the Elder Futhark and sixth rune of the second ætt.'
-  },
-  {
-    glyph:'ᛉ', name:'Algiz', aka:'Algis, Eolh, Ihwar, Elhaz', sound:'Z',
-    meaning:'Meaning: elk, protection. Protective force, valkyrjur. The rune of the connection between gods and humanity, Bifröst. Fifteenth rune of the Elder Futhark and seventh rune of the second ætt.'
-  },
-  {
-    glyph:'ᛊ', name:'Sowilo', aka:'Saugil, Sigil, Sól, Sig, Sun Rune', sound:'S / X / Z',
-    meaning:'Meaning: sun, the holy solar wheel. The archetypal sun and magickal will active throughout the multiverse. Counterforce to cosmic ice. Sixteenth rune of the Elder Futhark and eighth (final) rune of the second ætt.'
-  },
-  {
-    glyph:'ᛏ', name:'Tiwaz', aka:'Teiws, Tir, Týr', sound:'T',
-    meaning:'Meaning: the god Týr, the sky god. The force of divine order, justice, self-sacrifice, and the world-column. The true victory rune. Seventeenth rune of the Elder Futhark and first rune of the third ætt.'
-  },
-  {
-    glyph:'ᛒ', name:'Berkanan', aka:'Bairkan, Beorc, Bjarkan', sound:'B',
-    meaning:'Meaning: birch goddess, the numen of the birch as earth mother. The mystery of the great mother, container of all becoming/being, the birth-life-death-rebirth cycle. Eighteenth rune of the Elder Futhark and second rune of the third ætt.'
-  },
-  {
-    glyph:'ᛖ', name:'Ehwaz', aka:'Aihws, Eh, Íor', sound:'E',
-    meaning:'Meaning: horse, the twin gods or heroes in equine aspect. The power of the divine twins, harmonious duality, vehicle of otherworldly journeys, trust and loyalty. Nineteenth rune of the Elder Futhark and third rune of the third ætt.'
-  },
-  {
-    glyph:'ᛗ', name:'Mannaz', aka:'Manna, Mann, Madhr', sound:'M',
-    meaning:'Meaning: human, the divine ancestor and sky father. The mystery of the divine archetypal structure in every individual, the genetic link between gods and mortals. Twentieth rune of the Elder Futhark and fourth rune of the third ætt.'
-  },
-  {
-    glyph:'ᛚ', name:'Laguz', aka:'Lagus, Lagu, Lögr', sound:'L',
-    meaning:'Meaning: a body of water (or leek). Life energy and organic growth, the basic life energy in the multiverse and the secret source of all organic life. Twenty-first rune of the Elder Futhark and fifth rune of the third ætt.'
-  },
-  {
-    glyph:'ᛜ', name:'Ingwaz', aka:'Enguz, Ing, Yngvi', sound:'Ng',
-    meaning:'Meaning: the god Ing, the earth god. Male consort of the earth mother Nerthus, storehouse of potential energy, gestation and sudden release. Twenty-second rune of the Elder Futhark and sixth rune of the third ætt.'
-  },
-  {
-    glyph:'ᛟ', name:'Othala', aka:'Othal, Éthel, Ódhal', sound:'O',
-    meaning:'Meaning: ancestral property, immobile hereditary property. The sacred enclosure of the clan, the cosmic concept of Midhgardhr, inherited spiritual and material power. Twenty-fourth and final rune of the Elder Futhark and eighth rune of the third ætt.'
-  },
-  {
-    glyph:'ᛞ', name:'Dagaz', aka:'Dags, Doeg, Dagr', sound:'D',
-    meaning:'Meaning: day, the light of day. The rune of total awakening, polarity, and the Odhinic paradox. Synthesis of day and night, the mystical moment. Twenty-third rune of the Elder Futhark and seventh rune of the third ætt.'
-  }
+  {glyph:'ᚠ',name:'Fehu',aka:'Feoh, Faíhu, Fé',sound:'F',meaning:'Meaning: mobile property, cattle, money. The modern English word "fee" derives from this root. First rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚢ',name:'Uruz',aka:'Úrus, Úr',sound:'U / V',meaning:'Meaning: the aurochs, the primal fertilizing essence. Old Norse úr also means drizzle or rain. Second rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚦ',name:'Thurisaz',aka:'Thiuth, Thorn, Thurs',sound:'Th',meaning:'Meaning: the strong one, giant. The thorn that protects the rose. Third rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚨ',name:'Ansuz',aka:'Ansus, Ós, Áss',sound:'A',meaning:'Meaning: a god, ancestral god. The stave of Odin as the numinous god of magick and ecstasy. Fourth rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚱ',name:'Raidho',aka:'Raidha, Rádh, Reidh',sound:'R',meaning:'Meaning: wagon, riding, chariot. The solar wagon and the chariot of Thor. Fifth rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚲ',name:'Kenaz',aka:'Kusma, Cén, Kaun',sound:'C / K / Q / X',meaning:'Meaning: torch, controlled fire, cremation. The Gothic and Old Norse names (swelling, sore) are secondary meanings relating to internal fire and inflammation. Sixth rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚷ',name:'Gebo',aka:'Giba, Gyfu, Gipt',sound:'G',meaning:'Meaning: gift, hospitality, that which is exchanged between gods and mortals. The holy mystery of the two in one. Seventh rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚹ',name:'Wunjo',aka:'Winja, Wynn, Vend',sound:'V / W',meaning:'Meaning: joy, pleasure, delight. The relationship of beings descended from the same source. Eighth and final rune of the first ætt.'},
+  {glyph:'ᚺ',name:'Hagaiaz',aka:'Hagl, Hægl, Hagall',sound:'H',meaning:'Meaning: hail, the icy egg or seed of primal cosmic life and pattern. The rune mother, from which all other runic forms may be derived. Ninth rune of the Elder Futhark and first rune of the second ætt.'},
+  {glyph:'ᚾ',name:'Nauthiz',aka:'Nauths, Nýd, Naudhr',sound:'N',meaning:'Meaning: need, fatalistic compulsion, need-fire and deliverance from distress. The cosmic force of resistance necessary to the formulation of ørlög. Tenth rune of the Elder Futhark and second rune of the second ætt.'},
+  {glyph:'ᛁ',name:'Isaz',aka:'Eis, Is, Íss',sound:'I',meaning:'Meaning: ice, primal matter/antimatter. The antipolar force to Fehu. Eleventh rune of the Elder Futhark and third rune of the second ætt.'},
+  {glyph:'ᛃ',name:'Jera',aka:'Jér, Gér, Ár',sound:'J / Y',meaning:'Meaning: the good year, harvest. Life cycle, cycle of the sun. One of the two central runes of the Elder Futhark. Twelfth rune and fourth rune of the second ætt.'},
+  {glyph:'ᛇ',name:'Eiwaz',aka:'Eihwas, Éoh, Ihwar',sound:'Ei',meaning:'Meaning: yew tree, the tree of life and death, Yggdrasill. The vertical axis of the world, the numinous axis connecting heaven, earth, and underworld. Thirteenth rune of the Elder Futhark and fifth rune of the second ætt.'},
+  {glyph:'ᛈ',name:'Pertho',aka:'Pairthra, Peordh',sound:'P',meaning:'Meaning: device for casting lots, dice cup. Divination as an indicator of ørlög, the primal laws. The rune of the Nornir and cosmic becoming. Fourteenth rune of the Elder Futhark and sixth rune of the second ætt.'},
+  {glyph:'ᛉ',name:'Algiz',aka:'Algis, Eolh, Ihwar, Elhaz',sound:'Z',meaning:'Meaning: elk, protection. Protective force, valkyrjur. The rune of the connection between gods and humanity, Bifröst. Fifteenth rune of the Elder Futhark and seventh rune of the second ætt.'},
+  {glyph:'ᛊ',name:'Sowilo',aka:'Saugil, Sigil, Sól, Sig, Sun Rune',sound:'S / X / Z',meaning:'Meaning: sun, the holy solar wheel. The archetypal sun and magickal will active throughout the multiverse. Counterforce to cosmic ice. Sixteenth rune of the Elder Futhark and eighth (final) rune of the second ætt.'},
+  {glyph:'ᛏ',name:'Tiwaz',aka:'Teiws, Tir, Týr',sound:'T',meaning:'Meaning: the god Týr, the sky god. The force of divine order, justice, self-sacrifice, and the world-column. The true victory rune. Seventeenth rune of the Elder Futhark and first rune of the third ætt.'},
+  {glyph:'ᛒ',name:'Berkanan',aka:'Bairkan, Beorc, Bjarkan',sound:'B',meaning:'Meaning: birch goddess, the numen of the birch as earth mother. The mystery of the great mother, container of all becoming/being, the birth-life-death-rebirth cycle. Eighteenth rune of the Elder Futhark and second rune of the third ætt.'},
+  {glyph:'ᛖ',name:'Ehwaz',aka:'Aihws, Eh, Íor',sound:'E',meaning:'Meaning: horse, the twin gods or heroes in equine aspect. The power of the divine twins, harmonious duality, vehicle of otherworldly journeys, trust and loyalty. Nineteenth rune of the Elder Futhark and third rune of the third ætt.'},
+  {glyph:'ᛗ',name:'Mannaz',aka:'Manna, Mann, Madhr',sound:'M',meaning:'Meaning: human, the divine ancestor and sky father. The mystery of the divine archetypal structure in every individual, the genetic link between gods and mortals. Twentieth rune of the Elder Futhark and fourth rune of the third ætt.'},
+  {glyph:'ᛚ',name:'Laguz',aka:'Lagus, Lagu, Lögr',sound:'L',meaning:'Meaning: a body of water (or leek). Life energy and organic growth, the basic life energy in the multiverse and the secret source of all organic life. Twenty-first rune of the Elder Futhark and fifth rune of the third ætt.'},
+  {glyph:'ᛜ',name:'Ingwaz',aka:'Enguz, Ing, Yngvi',sound:'Ng',meaning:'Meaning: the god Ing, the earth god. Male consort of the earth mother Nerthus, storehouse of potential energy, gestation and sudden release. Twenty-second rune of the Elder Futhark and sixth rune of the third ætt.'},
+  {glyph:'ᛟ',name:'Othala',aka:'Othal, Éthel, Ódhal',sound:'O',meaning:'Meaning: ancestral property, immobile hereditary property. The sacred enclosure of the clan, the cosmic concept of Midhgardhr, inherited spiritual and material power. Twenty-fourth and final rune of the Elder Futhark and eighth rune of the third ætt.'},
+  {glyph:'ᛞ',name:'Dagaz',aka:'Dags, Doeg, Dagr',sound:'D',meaning:'Meaning: day, the light of day. The rune of total awakening, polarity, and the Odhinic paradox. Synthesis of day and night, the mystical moment. Twenty-third rune of the Elder Futhark and seventh rune of the third ætt.'}
 ];
 
-const back = document.getElementById('runeBack');
-const pullStage = document.getElementById('pullStage');
-const resultStage = document.getElementById('resultStage');
+// Stone shapes: [width, height, border-radius, glyph-size, rotation]
+const STONE_CONFIGS = [
+  [82, 64,  '52% 48% 55% 45% / 48% 52% 48% 52%', '1.8rem', '-6deg'],
+  [68, 76,  '45% 55% 48% 52% / 55% 45% 55% 45%', '2rem',   '4deg' ],
+  [90, 60,  '55% 45% 52% 48% / 42% 58% 45% 55%', '1.7rem', '-10deg'],
+  [72, 80,  '48% 52% 58% 42% / 52% 48% 52% 48%', '2.1rem', '8deg' ],
+  [86, 68,  '50% 50% 55% 45% / 46% 54% 46% 54%', '1.9rem', '-4deg'],
+  [64, 70,  '42% 58% 46% 54% / 55% 45% 58% 42%', '1.85rem','12deg'],
+  [88, 62,  '58% 42% 50% 50% / 44% 56% 44% 56%', '1.75rem','-8deg'],
+  [74, 74,  '50% 50% 50% 50% / 52% 48% 52% 48%', '2rem',   '2deg' ]
+];
 
-function draw(){
-  const rune = RUNES[Math.floor(Math.random()*RUNES.length)];
-  document.getElementById('glyph').textContent = rune.glyph;
-  document.getElementById('rname').textContent = rune.name;
-  document.getElementById('raka').textContent = rune.aka ? 'Also: ' + rune.aka : '';
-  document.getElementById('rsound').textContent = 'Sound: ' + rune.sound;
-  document.getElementById('rmeaning').textContent = rune.meaning;
-  pullStage.style.display = 'none';
-  resultStage.classList.add('show');
+let drawn = null;
+
+function buildStones() {
+  const area = document.getElementById('stonesArea');
+  area.innerHTML = '';
+  STONE_CONFIGS.forEach(([w, h, br, gs, rot], i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'stone-wrap';
+    wrap.style.cssText = `--sw:${w}px;--sh:${h}px;--br:${br};--gs:${gs};--rot:${rot}`;
+    wrap.innerHTML = `
+      <div class="stone-inner" id="si${i}">
+        <div class="stone-face stone-back"></div>
+        <div class="stone-face stone-front"><span class="glyph" id="sg${i}"></span></div>
+      </div>`;
+    wrap.addEventListener('click', () => pickRune(i));
+    area.appendChild(wrap);
+  });
 }
 
-back.addEventListener('click', draw);
+function pickRune(idx) {
+  drawn = RUNES[Math.floor(Math.random() * RUNES.length)];
+
+  document.getElementById(`sg${idx}`).textContent = drawn.glyph;
+  document.getElementById(`si${idx}`).classList.add('flipped');
+
+  const otherStones = document.querySelectorAll('.stone-wrap');
+  otherStones.forEach((sw, i) => {
+    if (i !== idx) {
+      sw.style.transition = 'opacity .4s';
+      sw.style.opacity = '0';
+      sw.style.pointerEvents = 'none';
+    }
+  });
+
+  setTimeout(() => {
+    document.getElementById('pullStage').style.display = 'none';
+    document.getElementById('glyph').textContent = drawn.glyph;
+    document.getElementById('rname').textContent = drawn.name;
+    document.getElementById('raka').textContent = drawn.aka ? 'Also known as: ' + drawn.aka : '';
+    document.getElementById('rsound').textContent = 'Sound: ' + drawn.sound;
+    document.getElementById('rmeaning').textContent = drawn.meaning;
+    document.getElementById('resultStage').style.display = 'block';
+  }, 900);
+}
+
 document.getElementById('again').addEventListener('click', () => {
-  resultStage.classList.remove('show');
-  pullStage.style.display = 'block';
+  document.getElementById('resultStage').style.display = 'none';
+  document.getElementById('pullStage').style.display = 'block';
+  drawn = null;
+  buildStones();
 });
+
+buildStones();
 </script>
 </body>
 </html>
