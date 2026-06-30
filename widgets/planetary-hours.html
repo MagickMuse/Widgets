@@ -12,14 +12,15 @@
     --dark:#2a1f1f; --darker:#3d2b2b; --muted:#c9a98f; --notion:#E03E3E;
   }
   *{box-sizing:border-box;}
-  html,body{background:#1e1515;}
+  html,body{background:transparent;}
+  .title-box{background:linear-gradient(160deg,var(--darker),var(--dark));border:1px solid var(--maroon);border-radius:10px;padding:14px 18px;margin-bottom:18px;}
   body{
     margin:0; font-family:'EB Garamond', serif;
     color:var(--cream); padding:20px; min-height:100vh;
   }
   .wrap{max-width:480px;margin:0 auto;}
   h1{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:1.3rem;text-align:center;letter-spacing:.06em;color:var(--cream);margin:0 0 4px;text-transform:uppercase;}
-  .sub{text-align:center;color:var(--muted);font-size:.8rem;margin-bottom:18px;font-style:italic;}
+  .sub{text-align:center;color:var(--muted);font-size:.8rem;margin:0;font-style:italic;}
   .card{background:linear-gradient(160deg, var(--darker), var(--dark));border:1px solid var(--maroon);border-radius:10px;padding:18px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,.35);}
   .current{text-align:center;}
   .planet-symbol{font-size:2.6rem;display:block;margin-bottom:4px;color:var(--notion);text-shadow:0 0 20px rgba(224,62,62,.25);}
@@ -42,8 +43,10 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Planetary Hours</h1>
-  <div class="sub">Chaldean order, calculated from true local sunrise &amp; sunset</div>
+  <div class="title-box">
+    <h1>Planetary Hours</h1>
+    <div class="sub">Chaldean order, calculated from true local sunrise &amp; sunset</div>
+  </div>
 
   <div class="card loc-form" id="locForm">
     <input type="text" id="latInput" placeholder="Latitude">
