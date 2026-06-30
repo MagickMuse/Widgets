@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarot Pull</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff1d4; --rose:#cc5353; --crimson:#a82222; --maroon:#a62524;
+    --dark:#2a1f1f; --darker:#3d2b2b; --muted:#c9a98f; --notion:#E03E3E;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:transparent;}
+  body{margin:0;font-family:'EB Garamond',serif;color:var(--cream);padding:20px;min-height:100vh;display:flex;justify-content:center;}
+  .wrap{max-width:420px;width:100%;text-align:center;}
+  h1{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.8rem;font-style:italic;margin-bottom:22px;}
+  .stage{min-height:280px;display:flex;align-items:center;justify-content:center;}
+  .card-back{
+    width:120px;height:190px;border-radius:10px;
+    background:radial-gradient(circle at 35% 30%, var(--darker), var(--dark));
+    border:2px solid var(--maroon);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;box-shadow:0 6px 28px rgba(0,0,0,.4);
+    font-size:2.4rem;color:var(--rose);transition:transform .15s,box-shadow .15s;
+    flex-direction:column;gap:6px;
+  }
+  .card-back:hover{transform:scale(1.04);box-shadow:0 8px 32px rgba(204,83,83,.25);}
+  .card-back .back-symbol{font-size:1.8rem;color:var(--rose);}
+  .card-back .back-label{font-family:'Cinzel Decorative',serif;font-size:.55rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;}
+  .result{display:none;}
+  .result.show{display:block;}
+  .card-symbol{font-size:2.8rem;color:var(--notion);display:block;text-shadow:0 0 24px rgba(224,62,62,.3);transition:transform .3s;}
+  .card-symbol.reversed{transform:rotate(180deg);}
+  .card-name{font-family:'Cinzel Decorative',serif;font-size:1.25rem;letter-spacing:.04em;color:var(--cream);line-height:1.3;margin-top:6px;}
+  .card-suit{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;margin:4px 0 8px;}
+  .orientation{display:inline-block;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;padding:2px 10px;border-radius:20px;margin-bottom:14px;font-family:'EB Garamond',serif;}
+  .orientation.upright{background:rgba(224,62,62,.15);color:var(--notion);border:1px solid rgba(224,62,62,.35);}
+  .orientation.reversed{background:rgba(201,169,143,.1);color:var(--muted);border:1px solid rgba(201,169,143,.3);}
+  .keywords-card{background:linear-gradient(160deg,var(--darker),var(--dark));border:1px solid var(--maroon);border-radius:10px;padding:14px 18px;text-align:left;}
+  .keywords-card h3{margin:0 0 8px;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--notion);font-weight:normal;}
+  .keywords{font-size:1.1rem;line-height:1.5;color:var(--cream);}
+  .grimoire-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:14px;background:transparent;border:1px solid var(--maroon);
+    color:var(--muted);padding:7px 16px;border-radius:6px;cursor:pointer;
+    font-family:'EB Garamond',serif;font-size:.82rem;letter-spacing:.03em;
+    text-decoration:none;transition:background .15s,color .15s,border-color .15s;
+  }
+  .grimoire-btn:hover{background:rgba(224,62,62,.12);color:var(--cream);border-color:var(--notion);}
+  .grimoire-btn svg{width:13px;height:13px;opacity:.7;flex-shrink:0;}
+  .again{margin-top:10px;display:block;width:100%;background:transparent;border:1px solid var(--maroon);color:var(--cream);padding:8px;border-radius:6px;cursor:pointer;font-family:'EB Garamond',serif;font-size:.85rem;letter-spacing:.03em;transition:background .15s;}
+  .again:hover{background:var(--notion);border-color:var(--notion);}
+  .prompt{color:var(--muted);font-size:.85rem;margin-top:14px;}
+  .btn-row{display:flex;gap:8px;margin-top:14px;}
+  .btn-row .grimoire-btn{flex:1;justify-content:center;}
+  .btn-row .again{flex:1;margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tarot Pull</h1>
+  <div class="sub">Rider-Waite &middot; draw a single card, upright or reversed</div>
+  <div class="stage">
+    <div id="pullStage">
+      <div>
+        <div class="card-back" id="cardBack">
+          <span class="back-symbol">✦</span>
+          <span class="back-label">Draw</span>
+        </div>
+        <div class="prompt">Tap the card to draw</div>
+      </div>
+    </div>
+    <div class="result" id="resultStage">
+      <span class="card-symbol" id="csymbol"></span>
+      <div class="card-name" id="cname"></div>
+      <div class="card-suit" id="csuit"></div>
+      <span class="orientation" id="corient"></span>
+      <div class="keywords-card">
+        <h3 id="kw-label">Keywords</h3>
+        <div class="keywords" id="ckeywords"></div>
+      </div>
+      <div class="btn-row">
+        <a class="grimoire-btn" id="cgrimoire" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="1" width="10" height="13" rx="1"/><line x1="4" y1="5" x2="9" y2="5"/><line x1="4" y1="8" x2="9" y2="8"/><line x1="4" y1="11" x2="7" y2="11"/>
+          </svg>
+          View in Grimoire
+        </a>
+        <button class="again" id="again">Draw again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CARDS = [
+  // ── Major Arcana ───────────────────────────────────────────────────
+  {name:"The Fool",suit:"Major Arcana",symbol:"✦",
+   upright:"New beginnings, adventure, faith",
+   reversed:"Recklessness, poor timing, naivety",
+   url:"https://app.notion.com/20d16dcf71648009ab99ffdefdf34574"},
+  {name:"The Magician",suit:"Major Arcana",symbol:"✦",
+   upright:"Willpower, manifestation, skill",
+   reversed:"Self-doubt, manipulation, deception",
+   url:"https://app.notion.com/20d16dcf716480d59babf2bf6e055afb"},
+  {name:"The High Priestess",suit:"Major Arcana",symbol:"✦",
+   upright:"Intuition, mystery, inner wisdom",
+   reversed:"Hidden secrets, repression, withdrawal",
+   url:"https://app.notion.com/20d16dcf7164801eb8fefef774e44fe1"},
+  {name:"The Empress",suit:"Major Arcana",symbol:"✦",
+   upright:"Abundance, fertility, nurturing",
+   reversed:"Creative block, neglect, over-giving",
+   url:"https://app.notion.com/20d16dcf71648000aff5f50aa93db615"},
+  {name:"The Emperor",suit:"Major Arcana",symbol:"✦",
+   upright:"Authority, stability, leadership",
+   reversed:"Rigidity, loss of power, tyranny",
+   url:"https://app.notion.com/20d16dcf716480e88226c516768ed9db"},
+  {name:"The Hierophant",suit:"Major Arcana",symbol:"✦",
+   upright:"Tradition, conformity, spiritual guidance",
+   reversed:"Rebellion, breaking free, unorthodox",
+   url:"https://app.notion.com/20d16dcf716480c395acce35b97069f2"},
+  {name:"The Lovers",suit:"Major Arcana",symbol:"✦",
+   upright:"Union, harmony, meaningful choice",
+   reversed:"Conflict, separation, poor decisions",
+   url:"https://app.notion.com/20d16dcf71648048a1edfbf02d7f4fe2"},
+  {name:"The Chariot",suit:"Major Arcana",symbol:"✦",
+   upright:"Willpower, victory, determination",
+   reversed:"Lack of control, aggression, stagnation",
+   url:"https://app.notion.com/20d16dcf7164802eb56af9e1d98dcbf8"},
+  {name:"Justice",suit:"Major Arcana",symbol:"✦",
+   upright:"Fairness, truth, karma",
+   reversed:"Unfairness, dishonesty, imbalance",
+   url:"https://app.notion.com/20d16dcf71648037a3a5c5b03bda1a83"},
+  {name:"The Hermit",suit:"Major Arcana",symbol:"✦",
+   upright:"Inner wisdom, solitude, guidance",
+   reversed:"Isolation, rejection of wisdom, recklessness",
+   url:"https://app.notion.com/20d16dcf7164802098ffe3734ce62909"},
+  {name:"The Wheel of Fortune",suit:"Major Arcana",symbol:"✦",
+   upright:"Luck, destiny, turning point",
+   reversed:"Bad luck, resistance to change, delays",
+   url:"https://app.notion.com/20d16dcf716480e6a4d5c862689639e5"},
+  {name:"Strength",suit:"Major Arcana",symbol:"✦",
+   upright:"Inner strength, courage, compassion",
+   reversed:"Insecurity, weakness, self-doubt",
+   url:"https://app.notion.com/20d16dcf716480f3a8f9e893d6d0ecdf"},
+  {name:"The Hanged Man",suit:"Major Arcana",symbol:"✦",
+   upright:"Suspension, new perspective, surrender",
+   reversed:"Stalling, false sacrifice, indecision",
+   url:"https://app.notion.com/20d16dcf7164807eba9aff33a0b3978b"},
+  {name:"Death",suit:"Major Arcana",symbol:"✦",
+   upright:"Transformation, endings, transition",
+   reversed:"Resistance to change, stagnation, fear",
+   url:"https://app.notion.com/20d16dcf71648085a525d0b6c8a93987"},
+  {name:"Temperance",suit:"Major Arcana",symbol:"✦",
+   upright:"Balance, patience, moderation",
+   reversed:"Imbalance, excess, impatience",
+   url:"https://app.notion.com/20d16dcf716480e2b8c4e8d7861e3571"},
+  {name:"The Devil",suit:"Major Arcana",symbol:"✦",
+   upright:"Bondage, shadow self, materialism",
+   reversed:"Release, reclaiming power, detachment",
+   url:"https://app.notion.com/20d16dcf716480c085f9c33ef6e48e0d"},
+  {name:"The Tower",suit:"Major Arcana",symbol:"✦",
+   upright:"Upheaval, sudden change, revelation",
+   reversed:"Avoidance, fear of change, inner turmoil",
+   url:"https://app.notion.com/20d16dcf716480429453cfd8a4f53e85"},
+  {name:"The Star",suit:"Major Arcana",symbol:"✦",
+   upright:"Hope, inspiration, renewal",
+   reversed:"Disillusionment, hopelessness, self-doubt",
+   url:"https://app.notion.com/20d16dcf716480eeb134f98333eef193"},
+  {name:"The Moon",suit:"Major Arcana",symbol:"✦",
+   upright:"Illusion, intuition, the unconscious",
+   reversed:"Deception, confusion, repressed fears",
+   url:"https://app.notion.com/20d16dcf7164800bbf7fdd1a0fbae9de"},
+  {name:"The Sun",suit:"Major Arcana",symbol:"✦",
+   upright:"Joy, vitality, success",
+   reversed:"Overconfidence, burnout, ego",
+   url:"https://app.notion.com/20d16dcf7164805e970dce217ed49374"},
+  {name:"Judgement",suit:"Major Arcana",symbol:"✦",
+   upright:"Reflection, awakening, self-assessment",
+   reversed:"Self-doubt, indecision, harsh judgment",
+   url:"https://app.notion.com/20d16dcf7164809fa960e07fe48bb4e9"},
+  {name:"The World",suit:"Major Arcana",symbol:"✦",
+   upright:"Completion, fulfillment, wholeness",
+   reversed:"Incomplete goals, stagnation, delays",
+   url:"https://app.notion.com/20d16dcf7164805e92c2dc66efa0d6a9"},
+  // ── Wands ──────────────────────────────────────────────────────────
+  {name:"Ace of Wands",suit:"Wands",symbol:"♦",
+   upright:"Creative spark, new venture, passion",
+   reversed:"Delays, frustration, false start",
+   url:"https://app.notion.com/22316dcf716480f38219e5aaa64c0893"},
+  {name:"II of Wands",suit:"Wands",symbol:"♦",
+   upright:"Planning, vision, bold leadership",
+   reversed:"Disappointment, poor planning, setbacks",
+   url:"https://app.notion.com/21016dcf716480b18efcfd8960a6a5ec"},
+  {name:"III of Wands",suit:"Wands",symbol:"♦",
+   upright:"Expansion, foresight, momentum",
+   reversed:"Not ready, need refinement, setbacks",
+   url:"https://app.notion.com/22316dcf716480f98283fcfd2eef7d6b"},
+  {name:"IV of Wands",suit:"Wands",symbol:"♦",
+   upright:"Celebration, stability, achievement",
+   reversed:"Modest success, delayed celebration",
+   url:"https://app.notion.com/22316dcf7164809c9936cdfb3b296e5c"},
+  {name:"V of Wands",suit:"Wands",symbol:"♦",
+   upright:"Conflict, competition, ego clash",
+   reversed:"Avoiding conflict, compromise needed",
+   url:"https://app.notion.com/22316dcf71648003bd35cab261f637af"},
+  {name:"VI of Wands",suit:"Wands",symbol:"♦",
+   upright:"Victory, recognition, pride",
+   reversed:"Ego, delayed triumph, setbacks",
+   url:"https://app.notion.com/22316dcf7164801d8e39c8347cd26334"},
+  {name:"VII of Wands",suit:"Wands",symbol:"♦",
+   upright:"Perseverance, defense, challenge",
+   reversed:"Overwhelmed, giving up, confusion",
+   url:"https://app.notion.com/22316dcf716480b8b9dac4915d28f44f"},
+  {name:"VIII of Wands",suit:"Wands",symbol:"♦",
+   upright:"Swift action, momentum, travel",
+   reversed:"Delays, chaos, overwhelming pace",
+   url:"https://app.notion.com/22316dcf716480f2baa2d2575d464968"},
+  {name:"IX of Wands",suit:"Wands",symbol:"♦",
+   upright:"Resilience, last stand, stamina",
+   reversed:"Burnout, cut your losses, retreat",
+   url:"https://app.notion.com/22316dcf716480dd9228dc9d5ce35183"},
+  {name:"X of Wands",suit:"Wands",symbol:"♦",
+   upright:"Burden, overcommitment, exhaustion",
+   reversed:"Release, delegation, relief",
+   url:"https://app.notion.com/22316dcf7164803e9b1ac5e7c292074b"},
+  {name:"Page of Wands",suit:"Wands",symbol:"♦",
+   upright:"Enthusiasm, potential, student",
+   reversed:"Delays, unreliable, naive",
+   url:"https://app.notion.com/22416dcf716480dea1efce77d34649bd"},
+  {name:"Knight of Wands",suit:"Wands",symbol:"♦",
+   upright:"Adventure, good news, change",
+   reversed:"Delay, restlessness, unreliable",
+   url:"https://app.notion.com/22416dcf716480d893b1f6ee293bafae"},
+  {name:"Queen of Wands",suit:"Wands",symbol:"♦",
+   upright:"Charisma, confidence, nurturing",
+   reversed:"Drama, jealousy, power struggle",
+   url:"https://app.notion.com/22416dcf716480e8a294d04df8a1db69"},
+  {name:"King of Wands",suit:"Wands",symbol:"♦",
+   upright:"Leadership, vision, success",
+   reversed:"Delays, waning enthusiasm, unavailable",
+   url:"https://app.notion.com/22416dcf7164809a9dc9c4e9ce282cc3"},
+  // ── Cups ───────────────────────────────────────────────────────────
+  {name:"Ace of Cups",suit:"Cups",symbol:"♥",
+   upright:"New love, emotional awakening, joy",
+   reversed:"Blocked emotions, failed romance, delays",
+   url:"https://app.notion.com/21016dcf71648037a93ef38b5c9d8686"},
+  {name:"II of Cups",suit:"Cups",symbol:"♥",
+   upright:"Partnership, harmony, mutual respect",
+   reversed:"Disharmony, inequality, cooling affection",
+   url:"https://app.notion.com/22316dcf7164806389fdf34c1e588685"},
+  {name:"III of Cups",suit:"Cups",symbol:"♥",
+   upright:"Celebration, friendship, community",
+   reversed:"Overindulgence, disenchantment, exclusion",
+   url:"https://app.notion.com/22316dcf7164800293a0e759ca9c9f9b"},
+  {name:"IV of Cups",suit:"Cups",symbol:"♥",
+   upright:"Boredom, contemplation, apathy",
+   reversed:"Reassessment, retreat, withdrawn",
+   url:"https://app.notion.com/21016dcf7164807aa4caf42679635a97"},
+  {name:"V of Cups",suit:"Cups",symbol:"♥",
+   upright:"Loss, grief, self-pity",
+   reversed:"Healing, recovery, moving on",
+   url:"https://app.notion.com/22316dcf71648088aa35dd9386841ed0"},
+  {name:"VI of Cups",suit:"Cups",symbol:"♥",
+   upright:"Renewal, generosity, nostalgia",
+   reversed:"Clinging to the past, maturing, nostalgia",
+   url:"https://app.notion.com/22316dcf716480ea8c04dbe0e55f5f55"},
+  {name:"VII of Cups",suit:"Cups",symbol:"♥",
+   upright:"Fantasy, choices, wishful thinking",
+   reversed:"Confusion, illusion, lack of focus",
+   url:"https://app.notion.com/22316dcf71648027bfe9e388f0262e65"},
+  {name:"VIII of Cups",suit:"Cups",symbol:"♥",
+   upright:"Walking away, letting go, moving on",
+   reversed:"Stuck, wandering, fear of change",
+   url:"https://app.notion.com/22316dcf716480bd860edc5ecf7781f6"},
+  {name:"IX of Cups",suit:"Cups",symbol:"♥",
+   upright:"Wish fulfilled, contentment, pleasure",
+   reversed:"Indulgence, smugness, indiscretion",
+   url:"https://app.notion.com/22316dcf71648063889dcc97a7b027bf"},
+  {name:"X of Cups",suit:"Cups",symbol:"♥",
+   upright:"Joy, family harmony, happiness",
+   reversed:"Family discord, disillusionment, conflict",
+   url:"https://app.notion.com/22316dcf716480898b7ffb04504f74b1"},
+  {name:"Page of Cups",suit:"Cups",symbol:"♥",
+   upright:"Intuition, sensitivity, new beginnings",
+   reversed:"Heartbreak, misplaced trust, fantasy",
+   url:"https://app.notion.com/22416dcf71648001813cc472b6d9553f"},
+  {name:"Knight of Cups",suit:"Cups",symbol:"♥",
+   upright:"Romance, charm, invitation",
+   reversed:"Deception, broken promises, escapism",
+   url:"https://app.notion.com/22416dcf716480a7a39ac398555a1c87"},
+  {name:"Queen of Cups",suit:"Cups",symbol:"♥",
+   upright:"Compassion, nurturing, empathy",
+   reversed:"Manipulation, moodiness, over-emotion",
+   url:"https://app.notion.com/22416dcf7164800a8f4ffcf58b2d50cb"},
+  {name:"King of Cups",suit:"Cups",symbol:"♥",
+   upright:"Emotionally mature, creative, devoted",
+   reversed:"Manipulation, emotional volatility, jealousy",
+   url:"https://app.notion.com/22416dcf71648024879ece6ff486ae64"},
+  // ── Swords ─────────────────────────────────────────────────────────
+  {name:"Ace of Swords",suit:"Swords",symbol:"♠",
+   upright:"Clarity, breakthrough, truth",
+   reversed:"Miscommunication, confusion, delays",
+   url:"https://app.notion.com/22316dcf7164806ca987da1ce2b1160a"},
+  {name:"II of Swords",suit:"Swords",symbol:"♠",
+   upright:"Indecision, stalemate, balance",
+   reversed:"Confusion, conflict, forced decision",
+   url:"https://app.notion.com/22316dcf7164800f9a1fe2bd9c01903d"},
+  {name:"III of Swords",suit:"Swords",symbol:"♠",
+   upright:"Heartbreak, grief, separation",
+   reversed:"Recovery, forgiveness, moving on",
+   url:"https://app.notion.com/22316dcf716480a6b455dcc5b1b523b0"},
+  {name:"IV of Swords",suit:"Swords",symbol:"♠",
+   upright:"Rest, recovery, stillness",
+   reversed:"Burnout, no rest, restless mind",
+   url:"https://app.notion.com/22316dcf716480c68558dc8f651748c0"},
+  {name:"V of Swords",suit:"Swords",symbol:"♠",
+   upright:"Conflict, defeat, hollow victory",
+   reversed:"Remorse, regret, making amends",
+   url:"https://app.notion.com/22316dcf7164804f8554daf7ce5fa140"},
+  {name:"VI of Swords",suit:"Swords",symbol:"♠",
+   upright:"Transition, moving on, calmer waters",
+   reversed:"Stuck, unable to move on, obstacles",
+   url:"https://app.notion.com/22316dcf7164800ebcedce4008e43ded"},
+  {name:"VII of Swords",suit:"Swords",symbol:"♠",
+   upright:"Strategy, cunning, surreptitious action",
+   reversed:"Coming clean, recklessness, dishonesty",
+   url:"https://app.notion.com/22316dcf716480dc91a8e3fb1f64bdba"},
+  {name:"VIII of Swords",suit:"Swords",symbol:"♠",
+   upright:"Trapped, self-limiting, fear",
+   reversed:"Self-liberation, responsibility, facing truth",
+   url:"https://app.notion.com/22316dcf7164807bb16af79c6412b215"},
+  {name:"IX of Swords",suit:"Swords",symbol:"♠",
+   upright:"Anxiety, nightmares, despair",
+   reversed:"Crisis ending, seeking help, recovery",
+   url:"https://app.notion.com/22316dcf716480b9b96ac04e9a846c74"},
+  {name:"X of Swords",suit:"Swords",symbol:"♠",
+   upright:"Painful ending, crisis, betrayal",
+   reversed:"Recovery, new cycle, resisting closure",
+   url:"https://app.notion.com/22316dcf716480eebae2e2abae5d47ee"},
+  {name:"Page of Swords",suit:"Swords",symbol:"♠",
+   upright:"Intellectual curiosity, vigilance, challenge",
+   reversed:"Deception, impracticality, recklessness",
+   url:"https://app.notion.com/22416dcf716480c6a018f49f3833e40f"},
+  {name:"Knight of Swords",suit:"Swords",symbol:"♠",
+   upright:"Bold ideas, fast action, ambition",
+   reversed:"Impulsive, dishonest, restless",
+   url:"https://app.notion.com/22416dcf7164801a8427ec2307c6407a"},
+  {name:"Queen of Swords",suit:"Swords",symbol:"♠",
+   upright:"Independent, clear-headed, experienced",
+   reversed:"Bitter, cold, emotionally repressed",
+   url:"https://app.notion.com/22416dcf71648069a579e8ed347dec44"},
+  {name:"King of Swords",suit:"Swords",symbol:"♠",
+   upright:"Authority, intellect, ethics",
+   reversed:"Cold, manipulative, harsh judgment",
+   url:"https://app.notion.com/22416dcf71648038a4ecfa6467e3c9e1"},
+  // ── Pentacles ──────────────────────────────────────────────────────
+  {name:"Ace of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"New opportunity, prosperity, manifestation",
+   reversed:"Missed opportunity, greed, delays",
+   url:"https://app.notion.com/22316dcf71648041a7b2f76d40492cc7"},
+  {name:"II of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Balance, adaptability, multitasking",
+   reversed:"Overwhelmed, instability, juggling too much",
+   url:"https://app.notion.com/22316dcf716480c189e7d5ea071f9b85"},
+  {name:"III of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Skill, teamwork, craftsmanship",
+   reversed:"Under-appreciated, delays, lack of effort",
+   url:"https://app.notion.com/22316dcf716480369911c43a4be6ddef"},
+  {name:"IV of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Security, conservation, control",
+   reversed:"Stagnation, stubbornness, fear of risk",
+   url:"https://app.notion.com/21016dcf716480199a97fbd0d491b602"},
+  {name:"V of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Financial hardship, need, adversity",
+   reversed:"Recovery, improvement, spiritual focus",
+   url:"https://app.notion.com/22316dcf716480ac9571fe35d6ac2ce4"},
+  {name:"VI of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Generosity, sharing, abundance",
+   reversed:"Strings attached, inequality, debt",
+   url:"https://app.notion.com/22316dcf71648083a37de98857b6563b"},
+  {name:"VII of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Patience, investment, long-term vision",
+   reversed:"Impatience, setbacks, wasted effort",
+   url:"https://app.notion.com/21016dcf716480f2b7dfe7c6553e8816"},
+  {name:"VIII of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Mastery, dedication, craftsmanship",
+   reversed:"Burnout, lacking skills, undervalued",
+   url:"https://app.notion.com/22316dcf71648060829ee4f9cfca7da3"},
+  {name:"IX of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Self-sufficiency, luxury, refinement",
+   reversed:"Dependency, dissatisfaction, trapped",
+   url:"https://app.notion.com/22316dcf71648066982ac3922a6788e3"},
+  {name:"X of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Wealth, legacy, family security",
+   reversed:"Family conflict, financial loss, stagnation",
+   url:"https://app.notion.com/22316dcf7164800a990eccc23753fa6b"},
+  {name:"Page of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Diligent student, practical opportunity",
+   reversed:"Lazy, irresponsible, impractical",
+   url:"https://app.notion.com/22416dcf71648015b220f69a2fad29d6"},
+  {name:"Knight of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Reliable, methodical, loyal",
+   reversed:"Stagnant, stubborn, mercenary",
+   url:"https://app.notion.com/22416dcf716480479159cf1468fcaaa2"},
+  {name:"Queen of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Practical wisdom, abundance, nurturing",
+   reversed:"Mismanagement, envy, insecurity",
+   url:"https://app.notion.com/22416dcf7164807bb4e6e4801acf8a49"},
+  {name:"King of Pentacles",suit:"Pentacles",symbol:"♣",
+   upright:"Security, success, provider",
+   reversed:"Sluggish, stagnant, mercenary",
+   url:"https://app.notion.com/22416dcf716480fcb1b6d66824763854"}
+];
+
+const back = document.getElementById('cardBack');
+const pullStage = document.getElementById('pullStage');
+const resultStage = document.getElementById('resultStage');
+
+function draw(){
+  const c = CARDS[Math.floor(Math.random()*CARDS.length)];
+  const isReversed = Math.random() < 0.5;
+
+  const sym = document.getElementById('csymbol');
+  sym.textContent = c.symbol;
+  sym.className = 'card-symbol' + (isReversed ? ' reversed' : '');
+
+  document.getElementById('cname').textContent = c.name;
+  document.getElementById('csuit').textContent = c.suit;
+
+  const orient = document.getElementById('corient');
+  orient.textContent = isReversed ? 'Reversed' : 'Upright';
+  orient.className = 'orientation ' + (isReversed ? 'reversed' : 'upright');
+
+  document.getElementById('kw-label').textContent = isReversed ? 'Reversed Keywords' : 'Upright Keywords';
+  document.getElementById('ckeywords').textContent = isReversed ? c.reversed : c.upright;
+
+  document.getElementById('cgrimoire').href = c.url;
+
+  pullStage.style.display = 'none';
+  resultStage.classList.add('show');
+}
+
+back.addEventListener('click', draw);
+document.getElementById('again').addEventListener('click', () => {
+  resultStage.classList.remove('show');
+  pullStage.style.display = 'block';
+});
+</script>
+</body>
+</html>

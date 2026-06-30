@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planetary Hours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff1d4; --rose:#cc5353; --crimson:#a82222; --maroon:#a62524;
+    --dark:#2a1f1f; --darker:#3d2b2b; --muted:#c9a98f; --notion:#E03E3E;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:transparent;}
+  body{
+    margin:0; font-family:'EB Garamond', serif;
+    color:var(--cream); padding:20px; min-height:100vh;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:1.3rem;text-align:center;letter-spacing:.06em;color:var(--cream);margin:0 0 4px;text-transform:uppercase;}
+  .sub{text-align:center;color:var(--muted);font-size:.8rem;margin-bottom:18px;font-style:italic;}
+  .card{background:linear-gradient(160deg, var(--darker), var(--dark));border:1px solid var(--maroon);border-radius:10px;padding:18px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,.35);}
+  .current{text-align:center;}
+  .planet-symbol{font-size:2.6rem;display:block;margin-bottom:4px;color:var(--notion);text-shadow:0 0 20px rgba(224,62,62,.25);}
+  .planet-name{font-family:'Cinzel Decorative',serif;font-size:1.3rem;color:var(--cream);letter-spacing:.04em;}
+  .planet-meta{color:var(--muted);font-size:.85rem;margin-top:4px;}
+  .times{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:10px;border-top:1px solid var(--maroon);padding-top:10px;}
+  .loc-form{display:flex;gap:8px;flex-wrap:wrap;}
+  .loc-form input{flex:1;min-width:90px;background:var(--dark);border:1px solid var(--maroon);color:var(--cream);padding:8px;border-radius:6px;font-family:inherit;}
+  .loc-form button{background:var(--crimson);color:var(--cream);border:1px solid var(--maroon);padding:8px 14px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:bold;letter-spacing:.03em;}
+  .loc-form button:hover{background:var(--maroon);}
+  .status{font-size:.75rem;color:var(--muted);margin-top:8px;min-height:1em;}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;}
+  td,th{padding:5px 4px;text-align:left;border-bottom:1px solid var(--darker);}
+  tr.active{background:rgba(224,62,62,0.18);border-radius:6px;}
+  th{color:var(--muted);font-weight:normal;text-transform:uppercase;font-size:.7rem;}
+  .day-night-label{color:var(--rose);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;margin:10px 0 4px;}
+  .planet-powers{margin-top:12px;border-top:1px solid var(--maroon);padding-top:10px;font-size:.85rem;line-height:1.55;color:var(--cream);text-align:left;font-style:italic;display:none;}
+  .planet-powers.show{display:block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Planetary Hours</h1>
+  <div class="sub">Chaldean order, calculated from true local sunrise &amp; sunset</div>
+
+  <div class="card loc-form" id="locForm">
+    <input type="text" id="latInput" placeholder="Latitude">
+    <input type="text" id="lonInput" placeholder="Longitude">
+    <button id="useGeo">Use my location</button>
+    <button id="calc">Set</button>
+  </div>
+  <div class="status" id="status">Allow location access, or enter coordinates manually.</div>
+
+  <div class="card current" id="currentCard" style="display:none">
+    <span class="planet-symbol" id="curSymbol"></span>
+    <div class="planet-name" id="curName"></div>
+    <div class="planet-meta" id="curMeta"></div>
+    <div class="times">
+      <span id="curStart"></span>
+      <span>&rarr;</span>
+      <span id="curEnd"></span>
+    </div>
+    <div class="planet-powers" id="curPowers"></div>
+  </div>
+
+  <div class="card" id="tableCard" style="display:none">
+    <div class="day-night-label">Day Hours</div>
+    <table><tbody id="dayHours"></tbody></table>
+    <div class="day-night-label">Night Hours</div>
+    <table><tbody id="nightHours"></tbody></table>
+  </div>
+</div>
+
+<script>
+const PLANETS = {
+  Saturn:  {symbol:'♄', powers:'Saturn governs death, binding, time, the underworld, underground forces, darkness, decrease, the elderly, sleep, solitude, entropy, endings, and discipline. Many fear working with Saturn, and it is indeed heavy to work with, but its influence bears upon us regardless.'},
+  Jupiter: {symbol:'♃', powers:'Jupiter governs grace, accretion, wealth, abundance, success, health, honors, and materialism. More than anything else, Jupiter is about sovereignty, leading a life where you are the sovereign of yourself and your domain.'},
+  Mars:    {symbol:'♂', powers:'Mars governs war, conflict, defense, aggression, strength, competition, lust, courage, and confidence. Beyond raw martial force, Mars also possesses the power to establish calm, the warrior\'s calm that soldiers and police must maintain in tense situations.'},
+  Sun:     {symbol:'☉', powers:'The Sun governs ego, inspiration, true will, great gains, health, peace, youth, resurrection, and promotions. Its radiant energy fuels vitality, creative power, and the manifestation of one\'s highest purpose.'},
+  Venus:   {symbol:'♀', powers:'Venus rules emotions, love, friendships, romance, enchantment, beauty, art, parties, and all types of attraction and influence. Her domain encompasses the magnetic forces that draw people together and the aesthetic pleasures that make life beautiful.'},
+  Mercury: {symbol:'☿', powers:'Mercury governs thought, intellect, business, marketing, movement, intelligence gathering, science, theft, writing, games, and eloquence. Its energy is swift, multidimensional, and facilitates communication, learning, and the rapid exchange of information.'},
+  Moon:    {symbol:'☽', powers:'The Moon acts as a gateway to higher spiritual planes and deeper psychic awareness. It governs intuition, clairvoyance, scrying, and astral travel. Its energy influences dreams, femininity, sexual attraction, water, blood, and the management of time through cycles.'}
+};
+const CHALDEAN = ['Saturn','Jupiter','Mars','Sun','Venus','Mercury','Moon'];
+const DAY_RULER = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn']; // index = Date.getDay()
+
+// Solar position based sunrise/sunset (NOAA "general equation", ~1 minute accuracy)
+function toJulian(date){ return date.getTime() / 86400000 + 2440587.5; }
+function fromJulian(j){ return new Date((j - 2440587.5) * 86400000); }
+const rad = Math.PI/180, deg = 180/Math.PI;
+
+function sunTimesUTC(date, lat, lon){
+  const J = toJulian(date);
+  const n = Math.round(J - 2451545.0 + 0.0008);
+  const Jstar = n - lon/360;
+  const M = (357.5291 + 0.98560028 * Jstar) % 360;
+  const Mrad = M*rad;
+  const C = 1.9148*Math.sin(Mrad) + 0.0200*Math.sin(2*Mrad) + 0.0003*Math.sin(3*Mrad);
+  const lambda = (M + C + 180 + 102.9372) % 360;
+  const lambdaRad = lambda*rad;
+  const Jtransit = 2451545.0 + Jstar + 0.0053*Math.sin(Mrad) - 0.0069*Math.sin(2*lambdaRad);
+  const delta = Math.asin(Math.sin(lambdaRad) * Math.sin(23.4397*rad));
+  const latRad = lat*rad;
+  const cosH = (Math.sin(-0.83*rad) - Math.sin(latRad)*Math.sin(delta)) / (Math.cos(latRad)*Math.cos(delta));
+  if (cosH > 1) return null; // sun never rises
+  if (cosH < -1) return null; // sun never sets
+  const H = Math.acos(cosH) * deg;
+  const Jrise = Jtransit - H/360;
+  const Jset = Jtransit + H/360;
+  return { sunrise: fromJulian(Jrise), sunset: fromJulian(Jset) };
+}
+
+function buildHours(lat, lon, now){
+  const today = new Date(now); today.setUTCHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setUTCDate(yesterday.getUTCDate()-1);
+  const tomorrow = new Date(today); tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
+
+  const tY = sunTimesUTC(yesterday, lat, lon);
+  const t0 = sunTimesUTC(today, lat, lon);
+  const t1 = sunTimesUTC(tomorrow, lat, lon);
+  if (!t0 || !t1 || !tY) return null;
+
+  // Determine the relevant "day window": if now is before today's sunrise, we're in last night's
+  // hours (yesterday sunset -> today sunrise). Otherwise today sunrise->sunset (day), then
+  // today sunset -> tomorrow sunrise (night).
+  let dayStart, dayEnd, nightStart, nightEnd, rulerDate;
+  if (now < t0.sunrise) {
+    dayStart = sunTimesUTC(yesterday, lat, lon).sunrise; dayEnd = tY.sunset;
+    nightStart = tY.sunset; nightEnd = t0.sunrise;
+    rulerDate = yesterday;
+  } else {
+    dayStart = t0.sunrise; dayEnd = t0.sunset;
+    nightStart = t0.sunset; nightEnd = t1.sunrise;
+    rulerDate = today;
+  }
+
+  const ruler = DAY_RULER[rulerDate.getUTCDay()];
+  const startIdx = CHALDEAN.indexOf(ruler);
+
+  const dayMs = (dayEnd - dayStart) / 12;
+  const nightMs = (nightEnd - nightStart) / 12;
+
+  const hours = [];
+  for (let i=0;i<12;i++){
+    hours.push({
+      planet: CHALDEAN[(startIdx+i)%7],
+      start: new Date(dayStart.getTime() + i*dayMs),
+      end: new Date(dayStart.getTime() + (i+1)*dayMs),
+      label: 'Day ' + (i+1)
+    });
+  }
+  for (let i=0;i<12;i++){
+    hours.push({
+      planet: CHALDEAN[(startIdx+12+i)%7],
+      start: new Date(nightStart.getTime() + i*nightMs),
+      end: new Date(nightStart.getTime() + (i+1)*nightMs),
+      label: 'Night ' + (i+1)
+    });
+  }
+  return hours;
+}
+
+function fmt(d){
+  return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function render(lat, lon){
+  const now = new Date();
+  const hours = buildHours(lat, lon, now);
+  const status = document.getElementById('status');
+  if (!hours){
+    status.textContent = 'Could not compute sunrise/sunset for this location (polar day/night). Try different coordinates.';
+    return;
+  }
+  status.textContent = `Lat ${lat.toFixed(3)}, Lon ${lon.toFixed(3)} — updated ${fmt(now)}`;
+
+  const current = hours.find(h => now >= h.start && now < h.end) || hours[hours.length-1];
+  document.getElementById('currentCard').style.display = 'block';
+  document.getElementById('tableCard').style.display = 'block';
+  document.getElementById('curSymbol').textContent = PLANETS[current.planet].symbol;
+  document.getElementById('curName').textContent = current.planet;
+  document.getElementById('curMeta').textContent = current.label.includes('Day') ? 'Daytime hour' : 'Nighttime hour';
+  const powersEl = document.getElementById('curPowers');
+  powersEl.textContent = PLANETS[current.planet].powers;
+  powersEl.classList.add('show');
+  document.getElementById('curStart').textContent = fmt(current.start);
+  document.getElementById('curEnd').textContent = fmt(current.end);
+
+  const dayBody = document.getElementById('dayHours');
+  const nightBody = document.getElementById('nightHours');
+  dayBody.innerHTML = ''; nightBody.innerHTML = '';
+  hours.forEach(h => {
+    const tr = document.createElement('tr');
+    if (h === current) tr.className = 'active';
+    tr.innerHTML = `<td>${PLANETS[h.planet].symbol} ${h.planet}</td><td>${fmt(h.start)}</td><td>${fmt(h.end)}</td>`;
+    (h.label.startsWith('Day') ? dayBody : nightBody).appendChild(tr);
+  });
+}
+
+function setCoords(lat, lon){
+  document.getElementById('latInput').value = lat.toFixed(4);
+  document.getElementById('lonInput').value = lon.toFixed(4);
+  render(lat, lon);
+}
+
+document.getElementById('useGeo').addEventListener('click', () => {
+  if (!navigator.geolocation){
+    document.getElementById('status').textContent = 'Geolocation not supported in this browser.';
+    return;
+  }
+  document.getElementById('status').textContent = 'Locating...';
+  navigator.geolocation.getCurrentPosition(
+    pos => setCoords(pos.coords.latitude, pos.coords.longitude),
+    err => { document.getElementById('status').textContent = 'Location denied — enter coordinates manually.'; }
+  );
+});
+
+document.getElementById('calc').addEventListener('click', () => {
+  const lat = parseFloat(document.getElementById('latInput').value);
+  const lon = parseFloat(document.getElementById('lonInput').value);
+  if (isNaN(lat) || isNaN(lon)){
+    document.getElementById('status').textContent = 'Enter valid numeric latitude and longitude.';
+    return;
+  }
+  setCoords(lat, lon);
+});
+
+// refresh every minute
+setInterval(() => {
+  const lat = parseFloat(document.getElementById('latInput').value);
+  const lon = parseFloat(document.getElementById('lonInput').value);
+  if (!isNaN(lat) && !isNaN(lon)) render(lat, lon);
+}, 60000);
+</script>
+</body>
+</html>
