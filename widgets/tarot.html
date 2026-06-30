@@ -330,9 +330,8 @@ const IMG = {
 };
 
 function toNotionUrl(raw) {
-  const hex = raw.split('?')[0].split('/').pop();
-  if (hex.includes('-')) return 'https://www.notion.so/' + hex;
-  return `https://www.notion.so/${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+  const hex = raw.split('?')[0].split('/').pop().replace(/-/g,'');
+  return `https://app.notion.com/p/${hex}`;
 }
 
 const ANGLES = [-27, -18, -9, 0, 9, 18, 27];
