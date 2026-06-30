@@ -247,34 +247,87 @@ const CARDS = [
   {name:"King of Pentacles",suit:"Pentacles",symbol:"♣",upright:"Security, success, provider",reversed:"Sluggish, stagnant, mercenary",url:"https://app.notion.com/22416dcf716480fcb1b6d66824763854"}
 ];
 
-const IMG_BASE = 'https://www.sacred-texts.com/tarot/pkt/img/';
-const MAJOR_NUM = {
-  'Fool':'00','Magician':'01','High':'02','Empress':'03','Emperor':'04',
-  'Hierophant':'05','Lovers':'06','Chariot':'07','Strength':'08','Hermit':'09',
-  'Wheel':'10','Justice':'11','Hanged':'12','Death':'13','Temperance':'14',
-  'Devil':'15','Tower':'16','Star':'17','Moon':'18','Sun':'19',
-  'Judgement':'20','World':'21'
+const W = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
+const IMG = {
+  'The Fool':             W+'RWS_Tarot_00_Fool.jpg',
+  'The Magician':         W+'RWS_Tarot_01_Magician.jpg',
+  'The High Priestess':   W+'RWS_Tarot_02_High_Priestess.jpg',
+  'The Empress':          W+'RWS_Tarot_03_Empress.jpg',
+  'The Emperor':          W+'RWS_Tarot_04_Emperor.jpg',
+  'The Hierophant':       W+'RWS_Tarot_05_Hierophant.jpg',
+  'The Lovers':           W+'RWS_Tarot_06_Lovers.jpg',
+  'The Chariot':          W+'RWS_Tarot_07_Chariot.jpg',
+  'Strength':             W+'RWS_Tarot_08_Strength.jpg',
+  'The Hermit':           W+'RWS_Tarot_09_Hermit.jpg',
+  'The Wheel of Fortune': W+'RWS_Tarot_10_Wheel_of_Fortune.jpg',
+  'Justice':              W+'RWS_Tarot_11_Justice.jpg',
+  'The Hanged Man':       W+'RWS_Tarot_12_Hanged_Man.jpg',
+  'Death':                W+'RWS_Tarot_13_Death.jpg',
+  'Temperance':           W+'RWS_Tarot_14_Temperance.jpg',
+  'The Devil':            W+'RWS_Tarot_15_Devil.jpg',
+  'The Tower':            W+'RWS_Tarot_16_Tower.jpg',
+  'The Star':             W+'RWS_Tarot_17_Star.jpg',
+  'The Moon':             W+'RWS_Tarot_18_Moon.jpg',
+  'The Sun':              W+'RWS_Tarot_19_Sun.jpg',
+  'Judgement':            W+'RWS_Tarot_20_Judgement.jpg',
+  'The World':            W+'RWS_Tarot_21_World.jpg',
+  'Ace of Wands':   W+'RWS_Tarot_Wands_01.jpg',
+  'II of Wands':    W+'RWS_Tarot_Wands_02.jpg',
+  'III of Wands':   W+'RWS_Tarot_Wands_03.jpg',
+  'IV of Wands':    W+'RWS_Tarot_Wands_04.jpg',
+  'V of Wands':     W+'RWS_Tarot_Wands_05.jpg',
+  'VI of Wands':    W+'RWS_Tarot_Wands_06.jpg',
+  'VII of Wands':   W+'RWS_Tarot_Wands_07.jpg',
+  'VIII of Wands':  W+'RWS_Tarot_Wands_08.jpg',
+  'IX of Wands':    W+'RWS_Tarot_Wands_09.jpg',
+  'X of Wands':     W+'RWS_Tarot_Wands_10.jpg',
+  'Page of Wands':  W+'RWS_Tarot_Wands_Page.jpg',
+  'Knight of Wands':W+'RWS_Tarot_Wands_Knight.jpg',
+  'Queen of Wands': W+'RWS_Tarot_Wands_Queen.jpg',
+  'King of Wands':  W+'RWS_Tarot_Wands_King.jpg',
+  'Ace of Cups':    W+'RWS_Tarot_Cups_01.jpg',
+  'II of Cups':     W+'RWS_Tarot_Cups_02.jpg',
+  'III of Cups':    W+'RWS_Tarot_Cups_03.jpg',
+  'IV of Cups':     W+'RWS_Tarot_Cups_04.jpg',
+  'V of Cups':      W+'RWS_Tarot_Cups_05.jpg',
+  'VI of Cups':     W+'RWS_Tarot_Cups_06.jpg',
+  'VII of Cups':    W+'RWS_Tarot_Cups_07.jpg',
+  'VIII of Cups':   W+'RWS_Tarot_Cups_08.jpg',
+  'IX of Cups':     W+'RWS_Tarot_Cups_09.jpg',
+  'X of Cups':      W+'RWS_Tarot_Cups_10.jpg',
+  'Page of Cups':   W+'RWS_Tarot_Cups_Page.jpg',
+  'Knight of Cups': W+'RWS_Tarot_Cups_Knight.jpg',
+  'Queen of Cups':  W+'RWS_Tarot_Cups_Queen.jpg',
+  'King of Cups':   W+'RWS_Tarot_Cups_King.jpg',
+  'Ace of Swords':    W+'RWS_Tarot_Swords_01.jpg',
+  'II of Swords':     W+'RWS_Tarot_Swords_02.jpg',
+  'III of Swords':    W+'RWS_Tarot_Swords_03.jpg',
+  'IV of Swords':     W+'RWS_Tarot_Swords_04.jpg',
+  'V of Swords':      W+'RWS_Tarot_Swords_05.jpg',
+  'VI of Swords':     W+'RWS_Tarot_Swords_06.jpg',
+  'VII of Swords':    W+'RWS_Tarot_Swords_07.jpg',
+  'VIII of Swords':   W+'RWS_Tarot_Swords_08.jpg',
+  'IX of Swords':     W+'RWS_Tarot_Swords_09.jpg',
+  'X of Swords':      W+'RWS_Tarot_Swords_10.jpg',
+  'Page of Swords':   W+'RWS_Tarot_Swords_Page.jpg',
+  'Knight of Swords': W+'RWS_Tarot_Swords_Knight.jpg',
+  'Queen of Swords':  W+'RWS_Tarot_Swords_Queen.jpg',
+  'King of Swords':   W+'RWS_Tarot_Swords_King.jpg',
+  'Ace of Pentacles':    W+'RWS_Tarot_Pentacles_01.jpg',
+  'II of Pentacles':     W+'RWS_Tarot_Pentacles_02.jpg',
+  'III of Pentacles':    W+'RWS_Tarot_Pentacles_03.jpg',
+  'IV of Pentacles':     W+'RWS_Tarot_Pentacles_04.jpg',
+  'V of Pentacles':      W+'RWS_Tarot_Pentacles_05.jpg',
+  'VI of Pentacles':     W+'RWS_Tarot_Pentacles_06.jpg',
+  'VII of Pentacles':    W+'RWS_Tarot_Pentacles_07.jpg',
+  'VIII of Pentacles':   W+'RWS_Tarot_Pentacles_08.jpg',
+  'IX of Pentacles':     W+'RWS_Tarot_Pentacles_09.jpg',
+  'X of Pentacles':      W+'RWS_Tarot_Pentacles_10.jpg',
+  'Page of Pentacles':   W+'RWS_Tarot_Pentacles_Page.jpg',
+  'Knight of Pentacles': W+'RWS_Tarot_Pentacles_Knight.jpg',
+  'Queen of Pentacles':  W+'RWS_Tarot_Pentacles_Queen.jpg',
+  'King of Pentacles':   W+'RWS_Tarot_Pentacles_King.jpg',
 };
-const MINOR_NUM = {
-  'Ace':'01','II':'02','III':'03','IV':'04','V':'05','VI':'06','VII':'07',
-  'VIII':'08','IX':'09','X':'10','Page':'11','Knight':'12','Queen':'13','King':'14'
-};
-const SUIT_CODE = {Wands:'wa',Cups:'cu',Swords:'sw',Pentacles:'pe'};
-
-function cardImg(card) {
-  if (card.suit === 'Major Arcana') {
-    const bare = card.name.replace(/^The /, '');
-    const key = bare.split(' ')[0];
-    const num = MAJOR_NUM[key];
-    if (!num) return '';
-    return IMG_BASE + 'ar' + num + '.jpg';
-  }
-  const s = SUIT_CODE[card.suit];
-  const firstWord = card.name.split(' ')[0];
-  const num = MINOR_NUM[firstWord];
-  if (!s || !num) return '';
-  return IMG_BASE + s + num + '.jpg';
-}
 
 function toNotionUrl(raw) {
   const hex = raw.split('?')[0].split('/').pop();
@@ -325,7 +378,7 @@ function showReveal() {
   const rev = isReversed;
 
   const front = document.getElementById('flipFront');
-  const imgSrc = cardImg(c);
+  const imgSrc = IMG[c.name] || '';
   if (imgSrc) {
     const img = document.createElement('img');
     img.src = imgSrc;
