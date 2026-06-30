@@ -84,9 +84,19 @@
   .meaning-card{background:linear-gradient(160deg,var(--darker),var(--dark));border:1px solid var(--maroon);border-radius:10px;padding:16px 18px;text-align:left;margin-bottom:16px;}
   .meaning-card h3{margin:0 0 8px;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--notion);font-weight:normal;}
   .meaning-card p{margin:0;font-size:.95rem;line-height:1.6;color:var(--cream);}
+  .btn-row{display:flex;gap:8px;margin-bottom:0;}
+  .grimoire-btn{
+    flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:transparent;border:1px solid var(--maroon);color:var(--muted);
+    padding:8px 14px;border-radius:6px;cursor:pointer;
+    font-family:'EB Garamond',serif;font-size:.82rem;letter-spacing:.03em;
+    text-decoration:none;transition:background .15s,color .15s,border-color .15s;
+  }
+  .grimoire-btn:hover{background:rgba(224,62,62,.12);color:var(--cream);border-color:var(--notion);}
+  .grimoire-btn svg{width:13px;height:13px;opacity:.7;flex-shrink:0;}
   .again-btn{
-    background:transparent;border:1px solid var(--maroon);color:var(--cream);
-    padding:9px 24px;border-radius:6px;cursor:pointer;
+    flex:1;background:transparent;border:1px solid var(--maroon);color:var(--cream);
+    padding:8px 14px;border-radius:6px;cursor:pointer;
     font-family:'EB Garamond',serif;font-size:.88rem;letter-spacing:.03em;
     transition:background .15s,border-color .15s;
   }
@@ -114,48 +124,66 @@
       <h3>Meaning</h3>
       <p id="rmeaning"></p>
     </div>
-    <button class="again-btn" id="again">Draw again</button>
+    <div class="btn-row">
+      <a class="grimoire-btn" id="rgrimoire" href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="1" width="10" height="13" rx="1"/>
+          <line x1="4" y1="5" x2="9" y2="5"/>
+          <line x1="4" y1="8" x2="9" y2="8"/>
+          <line x1="4" y1="11" x2="7" y2="11"/>
+        </svg>
+        View in Grimoire
+      </a>
+      <button class="again-btn" id="again">Draw again</button>
+    </div>
   </div>
 </div>
 
 <script>
+function toNotionUrl(raw) {
+  const hex = raw.split('?')[0].split('/').pop();
+  if (hex.includes('-')) return 'https://www.notion.so/' + hex;
+  return `https://www.notion.so/${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+
 const RUNES = [
-  {glyph:'ᚠ',name:'Fehu',aka:'Feoh, Faíhu, Fé',sound:'F',meaning:'Meaning: mobile property, cattle, money. The modern English word "fee" derives from this root. First rune of the Elder Futhark and the first ætt.'},
-  {glyph:'ᚢ',name:'Uruz',aka:'Úrus, Úr',sound:'U / V',meaning:'Meaning: the aurochs, the primal fertilizing essence. Old Norse úr also means drizzle or rain. Second rune of the Elder Futhark and the first ætt.'},
-  {glyph:'ᚦ',name:'Thurisaz',aka:'Thiuth, Thorn, Thurs',sound:'Th',meaning:'Meaning: the strong one, giant. The thorn that protects the rose. Third rune of the Elder Futhark and the first ætt.'},
-  {glyph:'ᚨ',name:'Ansuz',aka:'Ansus, Ós, Áss',sound:'A',meaning:'Meaning: a god, ancestral god. The stave of Odin as the numinous god of magick and ecstasy. Fourth rune of the Elder Futhark and the first ætt.'},
-  {glyph:'ᚱ',name:'Raidho',aka:'Raidha, Rádh, Reidh',sound:'R',meaning:'Meaning: wagon, riding, chariot. The solar wagon and the chariot of Thor. Fifth rune of the Elder Futhark and the first ætt.'},
-  {glyph:'ᚲ',name:'Kenaz',aka:'Kusma, Cén, Kaun',sound:'C / K / Q / X',meaning:'Meaning: torch, controlled fire, cremation. The Gothic and Old Norse names (swelling, sore) are secondary meanings relating to internal fire and inflammation. Sixth rune of the Elder Futhark and the first ætt.'},
-  {glyph:'ᚷ',name:'Gebo',aka:'Giba, Gyfu, Gipt',sound:'G',meaning:'Meaning: gift, hospitality, that which is exchanged between gods and mortals. The holy mystery of the two in one. Seventh rune of the Elder Futhark and the first ætt.'},
-  {glyph:'ᚹ',name:'Wunjo',aka:'Winja, Wynn, Vend',sound:'V / W',meaning:'Meaning: joy, pleasure, delight. The relationship of beings descended from the same source. Eighth and final rune of the first ætt.'},
-  {glyph:'ᚺ',name:'Hagaiaz',aka:'Hagl, Hægl, Hagall',sound:'H',meaning:'Meaning: hail, the icy egg or seed of primal cosmic life and pattern. The rune mother, from which all other runic forms may be derived. Ninth rune of the Elder Futhark and first rune of the second ætt.'},
-  {glyph:'ᚾ',name:'Nauthiz',aka:'Nauths, Nýd, Naudhr',sound:'N',meaning:'Meaning: need, fatalistic compulsion, need-fire and deliverance from distress. The cosmic force of resistance necessary to the formulation of ørlög. Tenth rune of the Elder Futhark and second rune of the second ætt.'},
-  {glyph:'ᛁ',name:'Isaz',aka:'Eis, Is, Íss',sound:'I',meaning:'Meaning: ice, primal matter/antimatter. The antipolar force to Fehu. Eleventh rune of the Elder Futhark and third rune of the second ætt.'},
-  {glyph:'ᛃ',name:'Jera',aka:'Jér, Gér, Ár',sound:'J / Y',meaning:'Meaning: the good year, harvest. Life cycle, cycle of the sun. One of the two central runes of the Elder Futhark. Twelfth rune and fourth rune of the second ætt.'},
-  {glyph:'ᛇ',name:'Eiwaz',aka:'Eihwas, Éoh, Ihwar',sound:'Ei',meaning:'Meaning: yew tree, the tree of life and death, Yggdrasill. The vertical axis of the world, the numinous axis connecting heaven, earth, and underworld. Thirteenth rune of the Elder Futhark and fifth rune of the second ætt.'},
-  {glyph:'ᛈ',name:'Pertho',aka:'Pairthra, Peordh',sound:'P',meaning:'Meaning: device for casting lots, dice cup. Divination as an indicator of ørlög, the primal laws. The rune of the Nornir and cosmic becoming. Fourteenth rune of the Elder Futhark and sixth rune of the second ætt.'},
-  {glyph:'ᛉ',name:'Algiz',aka:'Algis, Eolh, Ihwar, Elhaz',sound:'Z',meaning:'Meaning: elk, protection. Protective force, valkyrjur. The rune of the connection between gods and humanity, Bifröst. Fifteenth rune of the Elder Futhark and seventh rune of the second ætt.'},
-  {glyph:'ᛊ',name:'Sowilo',aka:'Saugil, Sigil, Sól, Sig, Sun Rune',sound:'S / X / Z',meaning:'Meaning: sun, the holy solar wheel. The archetypal sun and magickal will active throughout the multiverse. Counterforce to cosmic ice. Sixteenth rune of the Elder Futhark and eighth (final) rune of the second ætt.'},
-  {glyph:'ᛏ',name:'Tiwaz',aka:'Teiws, Tir, Týr',sound:'T',meaning:'Meaning: the god Týr, the sky god. The force of divine order, justice, self-sacrifice, and the world-column. The true victory rune. Seventeenth rune of the Elder Futhark and first rune of the third ætt.'},
-  {glyph:'ᛒ',name:'Berkanan',aka:'Bairkan, Beorc, Bjarkan',sound:'B',meaning:'Meaning: birch goddess, the numen of the birch as earth mother. The mystery of the great mother, container of all becoming/being, the birth-life-death-rebirth cycle. Eighteenth rune of the Elder Futhark and second rune of the third ætt.'},
-  {glyph:'ᛖ',name:'Ehwaz',aka:'Aihws, Eh, Íor',sound:'E',meaning:'Meaning: horse, the twin gods or heroes in equine aspect. The power of the divine twins, harmonious duality, vehicle of otherworldly journeys, trust and loyalty. Nineteenth rune of the Elder Futhark and third rune of the third ætt.'},
-  {glyph:'ᛗ',name:'Mannaz',aka:'Manna, Mann, Madhr',sound:'M',meaning:'Meaning: human, the divine ancestor and sky father. The mystery of the divine archetypal structure in every individual, the genetic link between gods and mortals. Twentieth rune of the Elder Futhark and fourth rune of the third ætt.'},
-  {glyph:'ᛚ',name:'Laguz',aka:'Lagus, Lagu, Lögr',sound:'L',meaning:'Meaning: a body of water (or leek). Life energy and organic growth, the basic life energy in the multiverse and the secret source of all organic life. Twenty-first rune of the Elder Futhark and fifth rune of the third ætt.'},
-  {glyph:'ᛜ',name:'Ingwaz',aka:'Enguz, Ing, Yngvi',sound:'Ng',meaning:'Meaning: the god Ing, the earth god. Male consort of the earth mother Nerthus, storehouse of potential energy, gestation and sudden release. Twenty-second rune of the Elder Futhark and sixth rune of the third ætt.'},
-  {glyph:'ᛟ',name:'Othala',aka:'Othal, Éthel, Ódhal',sound:'O',meaning:'Meaning: ancestral property, immobile hereditary property. The sacred enclosure of the clan, the cosmic concept of Midhgardhr, inherited spiritual and material power. Twenty-fourth and final rune of the Elder Futhark and eighth rune of the third ætt.'},
-  {glyph:'ᛞ',name:'Dagaz',aka:'Dags, Doeg, Dagr',sound:'D',meaning:'Meaning: day, the light of day. The rune of total awakening, polarity, and the Odhinic paradox. Synthesis of day and night, the mystical moment. Twenty-third rune of the Elder Futhark and seventh rune of the third ætt.'}
+  {glyph:'ᚠ',name:'Fehu',aka:'Feoh, Faíhu, Fé',sound:'F',url:'https://app.notion.com/p/1f516dcf716481b3b6a7fce80a8a00e2?pvs=1',meaning:'Meaning: mobile property, cattle, money. The modern English word "fee" derives from this root. First rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚢ',name:'Uruz',aka:'Úrus, Úr',sound:'U / V',url:'https://app.notion.com/p/1f516dcf716481c9a4b0dc4a1b9fc86a?pvs=1',meaning:'Meaning: the aurochs, the primal fertilizing essence. Old Norse úr also means drizzle or rain. Second rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚦ',name:'Thurisaz',aka:'Thiuth, Thorn, Thurs',sound:'Th',url:'https://app.notion.com/p/1f516dcf7164812bbfd8e8887ab372ca?pvs=1',meaning:'Meaning: the strong one, giant. The thorn that protects the rose. Third rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚨ',name:'Ansuz',aka:'Ansus, Ós, Áss',sound:'A',url:'https://app.notion.com/p/1f516dcf71648176a435cd9c243dd7df?pvs=1',meaning:'Meaning: a god, ancestral god. The stave of Odin as the numinous god of magick and ecstasy. Fourth rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚱ',name:'Raidho',aka:'Raidha, Rádh, Reidh',sound:'R',url:'https://app.notion.com/p/1f516dcf7164819e9790f571f1572c2a?pvs=1',meaning:'Meaning: wagon, riding, chariot. The solar wagon and the chariot of Thor. Fifth rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚲ',name:'Kenaz',aka:'Kusma, Cén, Kaun',sound:'C / K / Q / X',url:'https://app.notion.com/p/1f516dcf71648172a56ae1ddf1822368?pvs=1',meaning:'Meaning: torch, controlled fire, cremation. The Gothic and Old Norse names (swelling, sore) are secondary meanings relating to internal fire and inflammation. Sixth rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚷ',name:'Gebo',aka:'Giba, Gyfu, Gipt',sound:'G',url:'https://app.notion.com/p/1f516dcf716481f792fef5d6c039a00e?pvs=1',meaning:'Meaning: gift, hospitality, that which is exchanged between gods and mortals. The holy mystery of the two in one. Seventh rune of the Elder Futhark and the first ætt.'},
+  {glyph:'ᚹ',name:'Wunjo',aka:'Winja, Wynn, Vend',sound:'V / W',url:'https://app.notion.com/p/1f516dcf716481f6a595cd5991a5ba14?pvs=1',meaning:'Meaning: joy, pleasure, delight. The relationship of beings descended from the same source. Eighth and final rune of the first ætt.'},
+  {glyph:'ᚺ',name:'Hagaiaz',aka:'Hagl, Hægl, Hagall',sound:'H',url:'https://app.notion.com/p/1f516dcf716481fa88b5c9ddab76f71f?pvs=1',meaning:'Meaning: hail, the icy egg or seed of primal cosmic life and pattern. The rune mother, from which all other runic forms may be derived. Ninth rune of the Elder Futhark and first rune of the second ætt.'},
+  {glyph:'ᚾ',name:'Nauthiz',aka:'Nauths, Nýd, Naudhr',sound:'N',url:'https://app.notion.com/p/1f516dcf716481929118f819714ec202?pvs=1',meaning:'Meaning: need, fatalistic compulsion, need-fire and deliverance from distress. The cosmic force of resistance necessary to the formulation of ørlög. Tenth rune of the Elder Futhark and second rune of the second ætt.'},
+  {glyph:'ᛁ',name:'Isaz',aka:'Eis, Is, Íss',sound:'I',url:'https://app.notion.com/p/1f516dcf7164810aaa68fadb3a5a6405?pvs=1',meaning:'Meaning: ice, primal matter/antimatter. The antipolar force to Fehu. Eleventh rune of the Elder Futhark and third rune of the second ætt.'},
+  {glyph:'ᛃ',name:'Jera',aka:'Jér, Gér, Ár',sound:'J / Y',url:'https://app.notion.com/p/1f516dcf716481f9bd4ac76cc650d13e?pvs=1',meaning:'Meaning: the good year, harvest. Life cycle, cycle of the sun. One of the two central runes of the Elder Futhark. Twelfth rune and fourth rune of the second ætt.'},
+  {glyph:'ᛇ',name:'Eiwaz',aka:'Eihwas, Éoh, Ihwar',sound:'Ei',url:'https://app.notion.com/p/1f516dcf7164810cbbe2cad960328519?pvs=1',meaning:'Meaning: yew tree, the tree of life and death, Yggdrasill. The vertical axis of the world, the numinous axis connecting heaven, earth, and underworld. Thirteenth rune of the Elder Futhark and fifth rune of the second ætt.'},
+  {glyph:'ᛈ',name:'Pertho',aka:'Pairthra, Peordh',sound:'P',url:'https://app.notion.com/p/1f516dcf716481549a20f049bf2a5131?pvs=1',meaning:'Meaning: device for casting lots, dice cup. Divination as an indicator of ørlög, the primal laws. The rune of the Nornir and cosmic becoming. Fourteenth rune of the Elder Futhark and sixth rune of the second ætt.'},
+  {glyph:'ᛉ',name:'Algiz',aka:'Algis, Eolh, Ihwar, Elhaz',sound:'Z',url:'https://app.notion.com/p/1f516dcf71648104a9f7c0951c2e9d6b?pvs=1',meaning:'Meaning: elk, protection. Protective force, valkyrjur. The rune of the connection between gods and humanity, Bifröst. Fifteenth rune of the Elder Futhark and seventh rune of the second ætt.'},
+  {glyph:'ᛊ',name:'Sowilo',aka:'Saugil, Sigil, Sól, Sig, Sun Rune',sound:'S / X / Z',url:'https://app.notion.com/p/1f516dcf7164817d9b22cb7885ee15ea?pvs=1',meaning:'Meaning: sun, the holy solar wheel. The archetypal sun and magickal will active throughout the multiverse. Counterforce to cosmic ice. Sixteenth rune of the Elder Futhark and eighth (final) rune of the second ætt.'},
+  {glyph:'ᛏ',name:'Tiwaz',aka:'Teiws, Tir, Týr',sound:'T',url:'https://app.notion.com/p/1f516dcf7164819bb515ecb1cf684cd2?pvs=1',meaning:'Meaning: the god Týr, the sky god. The force of divine order, justice, self-sacrifice, and the world-column. The true victory rune. Seventeenth rune of the Elder Futhark and first rune of the third ætt.'},
+  {glyph:'ᛒ',name:'Berkanan',aka:'Bairkan, Beorc, Bjarkan',sound:'B',url:'https://app.notion.com/p/1f516dcf7164812f845ac8cf3e1fa054?pvs=1',meaning:'Meaning: birch goddess, the numen of the birch as earth mother. The mystery of the great mother, container of all becoming/being, the birth-life-death-rebirth cycle. Eighteenth rune of the Elder Futhark and second rune of the third ætt.'},
+  {glyph:'ᛖ',name:'Ehwaz',aka:'Aihws, Eh, Íor',sound:'E',url:'https://app.notion.com/p/1f516dcf71648183aa69d96917c2a12c?pvs=1',meaning:'Meaning: horse, the twin gods or heroes in equine aspect. The power of the divine twins, harmonious duality, vehicle of otherworldly journeys, trust and loyalty. Nineteenth rune of the Elder Futhark and third rune of the third ætt.'},
+  {glyph:'ᛗ',name:'Mannaz',aka:'Manna, Mann, Madhr',sound:'M',url:'https://app.notion.com/p/1f516dcf7164810bbfc9c25f3d772e44?pvs=1',meaning:'Meaning: human, the divine ancestor and sky father. The mystery of the divine archetypal structure in every individual, the genetic link between gods and mortals. Twentieth rune of the Elder Futhark and fourth rune of the third ætt.'},
+  {glyph:'ᛚ',name:'Laguz',aka:'Lagus, Lagu, Lögr',sound:'L',url:'https://app.notion.com/p/1f516dcf71648127ae30f9a1377e8802?pvs=1',meaning:'Meaning: a body of water (or leek). Life energy and organic growth, the basic life energy in the multiverse and the secret source of all organic life. Twenty-first rune of the Elder Futhark and fifth rune of the third ætt.'},
+  {glyph:'ᛜ',name:'Ingwaz',aka:'Enguz, Ing, Yngvi',sound:'Ng',url:'https://app.notion.com/p/1f516dcf716481f8baa6ede1a9b0818c?pvs=1',meaning:'Meaning: the god Ing, the earth god. Male consort of the earth mother Nerthus, storehouse of potential energy, gestation and sudden release. Twenty-second rune of the Elder Futhark and sixth rune of the third ætt.'},
+  {glyph:'ᛟ',name:'Othala',aka:'Othal, Éthel, Ódhal',sound:'O',url:'https://app.notion.com/p/1f516dcf71648159a25fdcb4dfb5f50d?pvs=1',meaning:'Meaning: ancestral property, immobile hereditary property. The sacred enclosure of the clan, the cosmic concept of Midhgardhr, inherited spiritual and material power. Twenty-fourth and final rune of the Elder Futhark and eighth rune of the third ætt.'},
+  {glyph:'ᛞ',name:'Dagaz',aka:'Dags, Doeg, Dagr',sound:'D',url:'https://app.notion.com/p/1f516dcf716481fd8fd2fd612e2837af?pvs=1',meaning:'Meaning: day, the light of day. The rune of total awakening, polarity, and the Odhinic paradox. Synthesis of day and night, the mystical moment. Twenty-third rune of the Elder Futhark and seventh rune of the third ætt.'}
 ];
 
 // Stone shapes: [width, height, border-radius, glyph-size, rotation]
+// Mixed order so rows look varied — no size mirroring between top and bottom
 const STONE_CONFIGS = [
-  [82, 64,  '52% 48% 55% 45% / 48% 52% 48% 52%', '1.8rem', '-6deg'],
-  [68, 76,  '45% 55% 48% 52% / 55% 45% 55% 45%', '2rem',   '4deg' ],
   [90, 60,  '55% 45% 52% 48% / 42% 58% 45% 55%', '1.7rem', '-10deg'],
   [72, 80,  '48% 52% 58% 42% / 52% 48% 52% 48%', '2.1rem', '8deg' ],
-  [86, 68,  '50% 50% 55% 45% / 46% 54% 46% 54%', '1.9rem', '-4deg'],
   [64, 70,  '42% 58% 46% 54% / 55% 45% 58% 42%', '1.85rem','12deg'],
-  [88, 62,  '58% 42% 50% 50% / 44% 56% 44% 56%', '1.75rem','-8deg'],
-  [74, 74,  '50% 50% 50% 50% / 52% 48% 52% 48%', '2rem',   '2deg' ]
+  [86, 68,  '50% 50% 55% 45% / 46% 54% 46% 54%', '1.9rem', '-4deg'],
+  [74, 74,  '50% 50% 50% 50% / 52% 48% 52% 48%', '2rem',   '2deg' ],
+  [82, 64,  '52% 48% 55% 45% / 48% 52% 48% 52%', '1.8rem', '-6deg'],
+  [68, 76,  '45% 55% 48% 52% / 55% 45% 55% 45%', '2rem',   '4deg' ],
+  [88, 62,  '58% 42% 50% 50% / 44% 56% 44% 56%', '1.75rem','-8deg']
 ];
 
 let drawn = null;
@@ -199,6 +227,7 @@ function pickRune(idx) {
     document.getElementById('raka').textContent = drawn.aka ? 'Also known as: ' + drawn.aka : '';
     document.getElementById('rsound').textContent = 'Sound: ' + drawn.sound;
     document.getElementById('rmeaning').textContent = drawn.meaning;
+    document.getElementById('rgrimoire').href = toNotionUrl(drawn.url);
     document.getElementById('resultStage').style.display = 'block';
   }, 900);
 }
