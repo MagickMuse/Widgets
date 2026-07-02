@@ -139,7 +139,7 @@ function render() {
   document.getElementById('sabbatDate').textContent = next.diff === 0 ? 'Today ✦' : fmt(next.date);
   document.getElementById('sabbatDesc').textContent = next.desc;
   document.getElementById('grimoireBtn').href = next.url;
-  document.getElementById('grimoireBtnLabel').textContent = next.name + ' Grimoire';
+  document.getElementById('grimoireBtnLabel').textContent = 'Open ' + next.name + ' Page';
 
   const ul = document.getElementById('upcomingList');
   ul.innerHTML = '';
