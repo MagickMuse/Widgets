@@ -46,12 +46,10 @@
   <div class="sub">Chaldean order, calculated from true local sunrise &amp; sunset</div>
 
   <div class="card loc-form" id="locForm">
-    <input type="text" id="latInput" placeholder="Latitude">
-    <input type="text" id="lonInput" placeholder="Longitude">
-    <button id="useGeo">Use my location</button>
-    <button id="calc">Set</button>
+    <input type="text" id="zipInput" placeholder="ZIP code" maxlength="5" inputmode="numeric">
+    <button id="calc">Go</button>
   </div>
-  <div class="status" id="status">Allow location access, or enter coordinates manually.</div>
+  <div class="status" id="status">Enter your ZIP code to calculate planetary hours.</div>
 
   <div class="card current" id="currentCard" style="display:none">
     <span class="planet-symbol" id="curSymbol"></span>
@@ -166,15 +164,15 @@ function fmt(d){
   return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 
-function render(lat, lon){
+function render(lat, lon, label){
   const now = new Date();
   const hours = buildHours(lat, lon, now);
   const status = document.getElementById('status');
   if (!hours){
-    status.textContent = 'Could not compute sunrise/sunset for this location (polar day/night). Try different coordinates.';
+    status.textContent = 'Could not compute sunrise/sunset for this location.';
     return;
   }
-  status.textContent = `Lat ${lat.toFixed(3)}, Lon ${lon.toFixed(3)} — updated ${fmt(now)}`;
+  status.textContent = `${label} — updated ${fmt(now)}`;
 
   const current = hours.find(h => now >= h.start && now < h.end) || hours[hours.length-1];
   document.getElementById('currentCard').style.display = 'block';
@@ -199,39 +197,46 @@ function render(lat, lon){
   });
 }
 
-function setCoords(lat, lon){
-  document.getElementById('latInput').value = lat.toFixed(4);
-  document.getElementById('lonInput').value = lon.toFixed(4);
-  render(lat, lon);
+let currentLat = null, currentLon = null, currentLabel = '';
+
+function setCoords(lat, lon, label){
+  currentLat = lat; currentLon = lon; currentLabel = label;
+  render(lat, lon, label);
 }
 
-document.getElementById('useGeo').addEventListener('click', () => {
-  if (!navigator.geolocation){
-    document.getElementById('status').textContent = 'Geolocation not supported in this browser.';
-    return;
+async function lookupZip(zip){
+  const status = document.getElementById('status');
+  status.textContent = 'Looking up ZIP code…';
+  try {
+    const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    if (!res.ok){ status.textContent = 'ZIP code not found. Please try another.'; return; }
+    const data = await res.json();
+    const place = data.places[0];
+    const lat = parseFloat(place.latitude);
+    const lon = parseFloat(place.longitude);
+    const label = `${place['place name']}, ${place['state abbreviation']} ${zip}`;
+    setCoords(lat, lon, label);
+  } catch(e){
+    status.textContent = 'Could not look up ZIP code — check your connection.';
   }
-  document.getElementById('status').textContent = 'Locating...';
-  navigator.geolocation.getCurrentPosition(
-    pos => setCoords(pos.coords.latitude, pos.coords.longitude),
-    err => { document.getElementById('status').textContent = 'Location denied — enter coordinates manually.'; }
-  );
-});
+}
 
 document.getElementById('calc').addEventListener('click', () => {
-  const lat = parseFloat(document.getElementById('latInput').value);
-  const lon = parseFloat(document.getElementById('lonInput').value);
-  if (isNaN(lat) || isNaN(lon)){
-    document.getElementById('status').textContent = 'Enter valid numeric latitude and longitude.';
+  const zip = document.getElementById('zipInput').value.trim();
+  if (!/^\d{5}$/.test(zip)){
+    document.getElementById('status').textContent = 'Please enter a 5-digit US ZIP code.';
     return;
   }
-  setCoords(lat, lon);
+  lookupZip(zip);
+});
+
+document.getElementById('zipInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('calc').click();
 });
 
 // refresh every minute
 setInterval(() => {
-  const lat = parseFloat(document.getElementById('latInput').value);
-  const lon = parseFloat(document.getElementById('lonInput').value);
-  if (!isNaN(lat) && !isNaN(lon)) render(lat, lon);
+  if (currentLat !== null) render(currentLat, currentLon, currentLabel);
 }, 60000);
 </script>
 </body>
