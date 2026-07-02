@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sabbat Countdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fce8e6; --bg2:#f5d0cc;
+    --text:#3d1515; --muted:#8b4545;
+    --accent:#c0392b; --crimson:#a82222;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:transparent;}
+  body{margin:0;font-family:'EB Garamond',serif;color:var(--text);padding:16px;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;}
+  .wrap{max-width:440px;width:100%;text-align:center;background:var(--bg);border:1px solid rgba(160,37,36,.3);border-radius:14px;padding:24px 20px 20px;}
+  h1{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.8rem;font-style:italic;margin-bottom:22px;}
+
+  .countdown-num{
+    font-family:'Cinzel Decorative',serif;
+    font-size:4.5rem;
+    line-height:1;
+    color:var(--accent);
+    letter-spacing:-.02em;
+    margin-bottom:4px;
+  }
+  .countdown-label{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px;}
+
+  .sabbat-card{background:var(--bg2);border:1px solid rgba(160,37,36,.25);border-radius:12px;padding:20px 18px 16px;margin-bottom:14px;}
+  .sabbat-symbol{font-size:2.8rem;line-height:1;margin-bottom:8px;display:block;}
+  .sabbat-name{font-family:'Cinzel Decorative',serif;font-size:1.25rem;letter-spacing:.04em;color:var(--text);margin-bottom:4px;}
+  .sabbat-date{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+  .sabbat-desc{font-size:.95rem;line-height:1.6;color:var(--text);font-style:italic;}
+
+  .divider{height:1px;background:rgba(160,37,36,.2);margin:14px 0;}
+
+  .also-coming{text-align:left;}
+  .also-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:8px;}
+  .upcoming-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;}
+  .upcoming-list li{display:flex;justify-content:space-between;align-items:center;font-size:.88rem;}
+  .upcoming-list .ul-name{color:var(--text);}
+  .upcoming-list .ul-days{color:var(--muted);font-size:.78rem;font-style:italic;}
+
+  .grimoire-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;
+    background:transparent;border:1px solid rgba(160,37,36,.4);color:var(--muted);
+    padding:9px 14px;border-radius:6px;cursor:pointer;
+    font-family:'EB Garamond',serif;font-size:.85rem;letter-spacing:.03em;
+    text-decoration:none;transition:background .15s,color .15s,border-color .15s;
+  }
+  .grimoire-btn:hover{background:rgba(192,57,43,.1);color:var(--text);border-color:var(--accent);}
+  .grimoire-btn svg{width:13px;height:13px;opacity:.7;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sabbat Countdown</h1>
+  <div class="sub">Wheel of the Year</div>
+
+  <div class="countdown-num" id="daysNum"></div>
+  <div class="countdown-label">days until</div>
+
+  <div class="sabbat-card">
+    <span class="sabbat-symbol" id="sabbatSymbol"></span>
+    <div class="sabbat-name" id="sabbatName"></div>
+    <div class="sabbat-date" id="sabbatDate"></div>
+    <div class="sabbat-desc" id="sabbatDesc"></div>
+  </div>
+
+  <div class="also-coming">
+    <div class="also-label">Coming up</div>
+    <ul class="upcoming-list" id="upcomingList"></ul>
+  </div>
+
+  <div class="divider"></div>
+
+  <a class="grimoire-btn" href="https://app.notion.com/p/28216dcf71648045b6e8cabf80242cb5" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="2" y="1" width="10" height="13" rx="1"/>
+      <line x1="5" y1="5" x2="9" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="8" y2="11"/>
+    </svg>
+    Open Timing Grimoire
+  </a>
+</div>
+
+<script>
+const SABBATS = [
+  { name:'Imbolc',      symbol:'🕯️', month:1,  day:1,  desc:'The first stirring of spring. A time of purification, new beginnings, and the return of light. Sacred to Brigid.' },
+  { name:'Ostara',      symbol:'🌸', month:2,  day:20, desc:'Spring equinox. Balance of light and dark as the world blooms. A festival of fertility, renewal, and possibility.' },
+  { name:'Beltane',     symbol:'🔥', month:4,  day:1,  desc:'The peak of spring and the doorway to summer. Fires are lit, the veil thins, and life force is at its height.' },
+  { name:'Litha',       symbol:'☀️', month:5,  day:21, desc:'Summer solstice. The sun reaches its zenith. A time of power, abundance, and celebration before the slow return of dark.' },
+  { name:'Lughnasadh',  symbol:'🌾', month:7,  day:1,  desc:'First harvest. Give thanks for abundance and begin to release what no longer serves. Sacred to Lugh.' },
+  { name:'Mabon',       symbol:'🍂', month:8,  day:22, desc:'Autumn equinox. The second harvest and a time of balance, gratitude, and preparation for the descent into dark.' },
+  { name:'Samhain',     symbol:'🕸️', month:9,  day:31, desc:'The veil between worlds is thinnest. Honor the ancestors, commune with the dead, and welcome the new year.' },
+  { name:'Yule',        symbol:'🌿', month:11, day:21, desc:'Winter solstice. The longest night, and the rebirth of the sun. A time of rest, reflection, and quiet hope.' },
+];
+
+function sabbatDate(year, s) {
+  return new Date(year, s.month, s.day);
+}
+
+function daysUntil(target, now) {
+  const t = new Date(target); t.setHours(0,0,0,0);
+  const n = new Date(now);    n.setHours(0,0,0,0);
+  return Math.round((t - n) / 86400000);
+}
+
+function fmt(date) {
+  return date.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+}
+
+function render() {
+  const now = new Date();
+  const year = now.getFullYear();
+
+  // Build list of upcoming sabbats (this year + next year rollover)
+  const candidates = [];
+  for (const s of SABBATS) {
+    const d = sabbatDate(year, s);
+    const diff = daysUntil(d, now);
+    if (diff >= 0) candidates.push({ ...s, date: d, diff });
+  }
+  // If fewer than 4 upcoming this year, add next year's
+  for (const s of SABBATS) {
+    if (candidates.length >= 5) break;
+    const d = sabbatDate(year + 1, s);
+    candidates.push({ ...s, date: d, diff: daysUntil(d, now) });
+  }
+
+  const next = candidates[0];
+  const upcoming = candidates.slice(1, 4);
+
+  document.getElementById('daysNum').textContent = next.diff === 0 ? '🌙' : next.diff;
+  document.getElementById('sabbatSymbol').textContent = next.symbol;
+  document.getElementById('sabbatName').textContent = next.name;
+  document.getElementById('sabbatDate').textContent = next.diff === 0 ? 'Today ✦' : fmt(next.date);
+  document.getElementById('sabbatDesc').textContent = next.desc;
+
+  const ul = document.getElementById('upcomingList');
+  ul.innerHTML = '';
+  for (const s of upcoming) {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="ul-name">${s.symbol} ${s.name}</span><span class="ul-days">${s.diff === 0 ? 'Today' : s.diff + ' days'}</span>`;
+    ul.appendChild(li);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
