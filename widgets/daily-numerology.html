@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily Numerology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fce8e6;
+    --bg2: #f5d0cc;
+    --text: #3d1515;
+    --muted: #8b4545;
+    --accent: #c0392b;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    background: transparent;
+    font-family: 'EB Garamond', serif;
+    color: var(--text);
+  }
+  .wrap {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 1.5rem 1.2rem 2rem;
+    box-sizing: border-box;
+  }
+  h1 {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 1.1rem;
+    color: var(--accent);
+    text-align: center;
+    margin: 0 0 0.2rem;
+    letter-spacing: 0.04em;
+  }
+  .date-display {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+    font-style: italic;
+  }
+  .number-hero {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .number-big {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    display: block;
+  }
+  .number-name {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 1.3rem;
+    color: var(--text);
+    display: block;
+    margin-top: 0.2rem;
+  }
+  .calc-box {
+    background: var(--bg2);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    margin-bottom: 1.1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .calc-step {
+    display: block;
+  }
+  .calc-step .eq {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .attributes {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .attr-chip {
+    background: var(--bg2);
+    border: 1px solid var(--accent);
+    border-radius: 20px;
+    padding: 0.25rem 0.8rem;
+    font-size: 0.8rem;
+    color: var(--text);
+    letter-spacing: 0.03em;
+  }
+  .attr-chip span {
+    color: var(--muted);
+    font-style: italic;
+  }
+  .section-label {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 0 0 0.3rem;
+  }
+  .description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 1.1rem;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--bg2);
+    margin: 0.9rem 0;
+  }
+  .notion-link {
+    display: block;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-style: italic;
+    text-decoration: none;
+    margin-top: 1rem;
+    opacity: 0.8;
+  }
+  .notion-link:hover { opacity: 1; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Daily Numerology</h1>
+  <div class="date-display" id="dateDisplay"></div>
+
+  <div class="number-hero">
+    <span class="number-big" id="numberBig"></span>
+    <span class="number-name" id="numberName"></span>
+  </div>
+
+  <div class="calc-box" id="calcBox"></div>
+
+  <div class="attributes" id="attributes"></div>
+
+  <p class="section-label">Numerology</p>
+  <p class="description" id="numerologyText"></p>
+
+  <hr class="divider">
+
+  <p class="section-label">Divination</p>
+  <p class="description" id="divinationText"></p>
+
+  <a class="notion-link" id="notionLink" href="#" target="_blank">Open in Symbol Grimoire ↗</a>
+</div>
+
+<script>
+  const NUMBERS = {
+    1: {
+      name: "One",
+      planet: "Sun", element: "Fire",
+      numerology: "Within numerology, one carries the oneness of all things and the individual. In the Yantra system of Hindu numerology, one marks the seed, the opening stage in the turning of the seasons and humanity's progress across the Earth.",
+      divination: "Fixed in purpose, single-minded, powerful, obstinate, ambitious, independent, self-sufficient, assertive, self-reliant, inventive, creative.",
+      url: "https://app.notion.com/p/1f516dcf716481638b06c987389e19da"
+    },
+    2: {
+      name: "Two",
+      planet: "Moon", element: "Water",
+      numerology: "Within numerology, two carries duality, balance, and separation. In the Yantra system of Hindu numerology, two marks germination.",
+      divination: "Tactful, conciliatory, even-tempered, diplomatic, persuasive, non-assertive, changeable, deceitful, cruel, malicious.",
+      url: "https://app.notion.com/p/1f516dcf716481378695ea853c764916"
+    },
+    3: {
+      name: "Three",
+      planet: "Jupiter", element: "Fire",
+      numerology: "Within numerology, three carries spirit, communication, and wisdom. In the Yantra system of Hindu numerology, three marks sprouting.",
+      divination: "Imaginative, energetic, bright, expressive, versatile, witty, successful, charming, ambitious, proud, lucky, commanding, seeks approval, over-extended, energies diffused.",
+      url: "https://app.notion.com/p/1f516dcf71648159846afff38d40673f"
+    },
+    4: {
+      name: "Four",
+      planet: "Uranus", element: "Air",
+      numerology: "Within numerology, four carries the Earth, solidity, understanding, and order. In the Yantra system of Hindu numerology, four marks the stage of testing and trials.",
+      divination: "Solid, practical, organized, administrative, calm, stern, respectable, steady, industrious, hard-earned success, detail oriented, bursts of rage, suspicious, resentful, poor, defeat, melancholic.",
+      url: "https://app.notion.com/p/1f516dcf71648171808ae96e9fbc3f7e"
+    },
+    5: {
+      name: "Five",
+      planet: "Mercury", element: "Air",
+      numerology: "Within numerology, five carries harmony, justice, protection, and love. In the Yantra system of Hindu numerology, five marks growth.",
+      divination: "Restlessness, impatience, clever, takes risks, speculator, adventurer, resourceful, quick-tempered, conceited, sarcastic, self-indulgent, excesses.",
+      url: "https://app.notion.com/p/1f516dcf7164818b9471ec43adf7b7aa"
+    },
+    6: {
+      name: "Six",
+      planet: "Venus", element: "Earth",
+      numerology: "Within numerology, six carries marriage, the union of male and female, and the balance of opposites. In the Yantra system of Hindu numerology, six marks budding.",
+      divination: "Harmony, domesticity, peaceful, happiness, kindly, reliable, friendly, loyal, conscientious, idealistic, affectionate, wholesome, conventional, eventual success, artistic, teacher, thorough, fussy, smug, gossipy, conceited, obstinate.",
+      url: "https://app.notion.com/p/1f516dcf716481ea9197c791ab17d29a"
+    },
+    7: {
+      name: "Seven",
+      planet: "Neptune", element: "Water",
+      numerology: "Within numerology, seven carries spirituality, the occult, and intelligence. In the Yantra system of Hindu numerology, seven marks blossoming.",
+      divination: "Reclusive, mystic, scholarly, philosopher, occultist, meditative, aloof, penetrative, imaginative, fey, strange.",
+      url: "https://app.notion.com/p/1f516dcf716481f8b98fe83e4210948c"
+    },
+    8: {
+      name: "Eight",
+      planet: "Saturn", element: "Earth",
+      numerology: "Within numerology, eight carries eternity and infinity, along with justice. In the Yantra system of Hindu numerology, eight marks fruit.",
+      divination: "Power, money, worldly involvement, practical, tough, cautious, tenacious, materialist, hard worker, curbed eccentricity, rebellious.",
+      url: "https://app.notion.com/p/1f516dcf716481378efed8f0c0a2a516"
+    },
+    9: {
+      name: "Nine",
+      planet: "Mars", element: "Fire",
+      numerology: "Within numerology, nine carries the limited and the limitless, experience and virtue, and completion. In the Yantra system of Hindu numerology, nine marks the harvest.",
+      divination: "Mental/spiritual achievement, impulsive, sympathetic, visionary, humanitarian, determined, science, teaching, artistic, unorthodox, intolerant of opposition, self-centered.",
+      url: "https://app.notion.com/p/1f516dcf71648144bd0ac25ca1d240e6"
+    }
+  };
+
+  function digitSum(n) {
+    return String(n).split('').reduce((a, d) => a + parseInt(d), 0);
+  }
+
+  function reduceToSingle(n) {
+    const steps = [];
+    while (n >= 10) {
+      const digits = String(n).split('');
+      const next = digits.reduce((a, d) => a + parseInt(d), 0);
+      steps.push({ from: n, digits, to: next });
+      n = next;
+    }
+    return { result: n, steps };
+  }
+
+  function buildCalc(month, day, year) {
+    const allDigits = (String(month) + String(day) + String(year)).split('').map(Number);
+    const firstSum = allDigits.reduce((a, b) => a + b, 0);
+    const { result, steps } = reduceToSingle(firstSum);
+
+    const lines = [];
+    // First line: all individual digits
+    lines.push(`<span class="calc-step">${allDigits.join(' + ')} <span class="eq">= ${firstSum}</span></span>`);
+    // Reduction steps
+    for (const s of steps) {
+      lines.push(`<span class="calc-step">${s.digits.join(' + ')} <span class="eq">= ${s.to}</span></span>`);
+    }
+    return { result, html: lines.join('') };
+  }
+
+  function run() {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    const year = now.getFullYear();
+
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    document.getElementById('dateDisplay').textContent = `${monthNames[month-1]} ${day}, ${year}`;
+
+    const { result, html } = buildCalc(month, day, year);
+    const data = NUMBERS[result];
+
+    document.getElementById('numberBig').textContent = result;
+    document.getElementById('numberName').textContent = data.name;
+    document.getElementById('calcBox').innerHTML = html;
+
+    document.getElementById('attributes').innerHTML =
+      `<span class="attr-chip"><span>Planet</span> ${data.planet}</span>` +
+      `<span class="attr-chip"><span>Element</span> ${data.element}</span>`;
+
+    document.getElementById('numerologyText').textContent = data.numerology;
+    document.getElementById('divinationText').textContent = data.divination;
+
+    const link = document.getElementById('notionLink');
+    link.href = data.url;
+  }
+
+  run();
+</script>
+</body>
+</html>
