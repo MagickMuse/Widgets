@@ -26,32 +26,28 @@
   .moon-emoji{font-size:3.5rem;display:block;margin-bottom:6px;line-height:1;}
   .moon-name{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--text);letter-spacing:.04em;margin-bottom:4px;}
   .moon-illum{color:var(--muted);font-size:.82rem;margin-bottom:10px;}
-  .moon-next{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);border-top:1px solid rgba(160,37,36,.2);padding-top:10px;margin-top:10px;}
   .moon-desc{font-size:.88rem;line-height:1.55;color:var(--text);font-style:italic;margin-top:10px;text-align:left;border-top:1px solid rgba(160,37,36,.2);padding-top:10px;}
   .moon-link{display:inline-flex;align-items:center;gap:5px;margin-top:10px;color:var(--accent);font-size:.8rem;text-decoration:none;letter-spacing:.03em;border:1px solid rgba(192,57,43,.3);padding:5px 12px;border-radius:6px;}
   .moon-link:hover{background:rgba(192,57,43,.1);}
+  .moon-next{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);border-top:1px solid rgba(160,37,36,.2);padding-top:10px;margin-top:10px;}
 
-  /* Retrograde */
-  .retro-list{display:flex;flex-direction:column;gap:8px;}
-  .retro-item{display:flex;align-items:center;justify-content:space-between;font-size:.88rem;}
-  .retro-planet{display:flex;align-items:center;gap:8px;}
-  .retro-symbol{font-size:1.2rem;color:var(--accent);}
-  .retro-name{color:var(--text);}
-  .retro-name a{color:var(--text);text-decoration:none;border-bottom:1px dotted rgba(160,37,36,.4);}
-  .retro-name a:hover{color:var(--accent);}
-  .retro-meta{font-size:.75rem;color:var(--muted);text-align:right;}
-  .retro-badge{display:inline-block;background:rgba(192,57,43,.15);color:var(--accent);font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;padding:2px 7px;border-radius:10px;margin-left:6px;}
-  .retro-upcoming{opacity:.7;}
-  .none-msg{font-size:.85rem;color:var(--muted);font-style:italic;}
-  .divider{height:1px;background:rgba(160,37,36,.15);margin:10px 0;}
+  /* Moon Sign */
+  .sign-row{display:flex;align-items:center;gap:14px;}
+  .sign-glyph{font-size:2.8rem;color:var(--accent);line-height:1;flex-shrink:0;}
+  .sign-info{flex:1;}
+  .sign-name{font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:var(--text);letter-spacing:.04em;margin-bottom:3px;}
+  .sign-meta{color:var(--muted);font-size:.78rem;margin-bottom:6px;}
+  .sign-desc{font-size:.86rem;line-height:1.55;color:var(--text);font-style:italic;margin-top:8px;border-top:1px solid rgba(160,37,36,.2);padding-top:8px;}
+  .sign-link{display:inline-flex;align-items:center;gap:5px;margin-top:10px;color:var(--accent);font-size:.8rem;text-decoration:none;letter-spacing:.03em;border:1px solid rgba(192,57,43,.3);padding:5px 12px;border-radius:6px;}
+  .sign-link:hover{background:rgba(192,57,43,.1);}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Sky Watch</h1>
-  <div class="sub">Moon phases &amp; planetary retrogrades</div>
+  <div class="sub">Current moon phase &amp; sign</div>
 
-  <div class="card moon-main" id="moonCard">
+  <div class="card moon-main">
     <div class="section-label">Current Moon Phase</div>
     <span class="moon-emoji" id="moonEmoji"></span>
     <div class="moon-name" id="moonName"></div>
@@ -64,60 +60,57 @@
     </div>
   </div>
 
-  <div class="card" id="retroCard">
-    <div class="section-label">Planetary Retrogrades</div>
-    <div id="activeRetro"></div>
-    <div class="divider" id="retroDivider" style="display:none"></div>
-    <div id="upcomingRetro"></div>
+  <div class="card">
+    <div class="section-label">Moon Sign</div>
+    <div class="sign-row">
+      <div class="sign-glyph" id="signGlyph"></div>
+      <div class="sign-info">
+        <div class="sign-name" id="signName"></div>
+        <div class="sign-meta" id="signMeta"></div>
+      </div>
+    </div>
+    <div class="sign-desc" id="signDesc"></div>
+    <div style="text-align:center"><a class="sign-link" id="signLink" href="#" target="_blank" rel="noopener noreferrer">Open Grimoire Page</a></div>
   </div>
 </div>
 
 <script>
-// ── Moon Phase Calculation ─────────────────────────────────────────────────
-// Reference new moon: Jan 6, 2000 18:14 UTC
+const p = id => `https://app.notion.com/p/${id}`;
+
+// ── Moon Phase ─────────────────────────────────────────────────────────────
 const REF_NEW_MOON = new Date('2000-01-06T18:14:00Z');
-const SYNODIC = 29.53058867; // days
+const SYNODIC = 29.53058867;
 
 const PHASES = [
-  { name: 'New Moon',        emoji: '🌑', minDay: 0,     maxDay: 1.85,  illumMin: 0,  illumMax: 2,
-    desc: 'The dark moon — a time of beginnings, intention-setting, and planting seeds. The veil between worlds is open. Rest, reflect, and call in what you wish to manifest.',
-    url: 'https://app.notion.com/p/1f716dcf716480538e06ce524f599d73' },
-  { name: 'Waxing Crescent', emoji: '🌒', minDay: 1.85,  maxDay: 7.38,  illumMin: 2,  illumMax: 48,
-    desc: 'The moon grows, and so does your intention. A time for taking first steps, gathering resources, and nurturing new projects. Energy is building — move with it.',
-    url: 'https://app.notion.com/p/1f716dcf716480d38a90ea99da996b3e' },
-  { name: 'First Quarter',   emoji: '🌓', minDay: 7.38,  maxDay: 9.22,  illumMin: 48, illumMax: 52,
-    desc: 'A moon of action and decision. Challenges arise and momentum demands choices. Push through resistance — the work you do now carries the arc of the full moon.',
-    url: 'https://app.notion.com/p/1f716dcf7164808e88fbee31876299cc' },
-  { name: 'Waxing Gibbous',  emoji: '🌔', minDay: 9.22,  maxDay: 14.77, illumMin: 52, illumMax: 98,
-    desc: 'Refinement and anticipation. You can see the shape of what you\'re building. Fine-tune your work, adjust your aim, and prepare for the power of the full moon.',
-    url: 'https://app.notion.com/p/1f716dcf716480b8afc0c77458907627' },
-  { name: 'Full Moon',       emoji: '🌕', minDay: 14.77, maxDay: 16.61, illumMin: 98, illumMax: 100,
-    desc: 'The peak of the cycle. Lunar energy reaches maximum power — intuition heightens, emotions run high, and workings are amplified. A night of revelation and release.',
-    url: 'https://app.notion.com/p/1f716dcf716480708814cbdc391c2e58' },
-  { name: 'Waning Gibbous',  emoji: '🌖', minDay: 16.61, maxDay: 22.15, illumMin: 98, illumMax: 52,
-    desc: 'The tide turns inward. A time of gratitude, sharing wisdom, and releasing what was gained. Give thanks, teach what you\'ve learned, and begin to let go.',
-    url: 'https://app.notion.com/p/1f716dcf7164808fac24df1aaa95c769' },
-  { name: 'Third Quarter',   emoji: '🌗', minDay: 22.15, maxDay: 24.0,  illumMin: 52, illumMax: 48,
-    desc: 'A moon of release and forgiveness. Let go of what no longer serves. Break bad habits, dissolve old patterns, and clear the way for the coming new cycle.',
-    url: 'https://app.notion.com/p/1f716dcf716480128655fe5905bc4b3a' },
-  { name: 'Waning Crescent', emoji: '🌘', minDay: 24.0,  maxDay: 29.53, illumMin: 48, illumMax: 2,
-    desc: 'The balsamic moon — a time of rest, surrender, and deep inner work. Withdraw from the outer world. Dream, listen to your intuition, and prepare for rebirth.',
-    url: 'https://app.notion.com/p/1f716dcf716480b280b8d1b44504526f' },
+  { name:'New Moon',        emoji:'🌑', minDay:0,     maxDay:1.85,
+    desc:'The dark moon — a time of beginnings, intention-setting, and planting seeds. The veil between worlds is open. Rest, reflect, and call in what you wish to manifest.',
+    url: p('1f716dcf716480538e06ce524f599d73') },
+  { name:'Waxing Crescent', emoji:'🌒', minDay:1.85,  maxDay:7.38,
+    desc:'The moon grows, and so does your intention. A time for taking first steps, gathering resources, and nurturing new projects. Energy is building — move with it.',
+    url: p('1f716dcf716480d38a90ea99da996b3e') },
+  { name:'First Quarter',   emoji:'🌓', minDay:7.38,  maxDay:9.22,
+    desc:'A moon of action and decision. Challenges arise and momentum demands choices. Push through resistance — the work you do now carries the arc of the full moon.',
+    url: p('1f716dcf7164808e88fbee31876299cc') },
+  { name:'Waxing Gibbous',  emoji:'🌔', minDay:9.22,  maxDay:14.77,
+    desc:'Refinement and anticipation. You can see the shape of what you\'re building. Fine-tune your work, adjust your aim, and prepare for the power of the full moon.',
+    url: p('1f716dcf716480b8afc0c77458907627') },
+  { name:'Full Moon',       emoji:'🌕', minDay:14.77, maxDay:16.61,
+    desc:'The peak of the cycle. Lunar energy reaches maximum power — intuition heightens, emotions run high, and workings are amplified. A night of revelation and release.',
+    url: p('1f716dcf716480708814cbdc391c2e58') },
+  { name:'Waning Gibbous',  emoji:'🌖', minDay:16.61, maxDay:22.15,
+    desc:'The tide turns inward. A time of gratitude, sharing wisdom, and releasing what was gained. Give thanks, teach what you\'ve learned, and begin to let go.',
+    url: p('1f716dcf7164808fac24df1aaa95c769') },
+  { name:'Third Quarter',   emoji:'🌗', minDay:22.15, maxDay:24.0,
+    desc:'A moon of release and forgiveness. Let go of what no longer serves. Break bad habits, dissolve old patterns, and clear the way for the coming new cycle.',
+    url: p('1f716dcf716480128655fe5905bc4b3a') },
+  { name:'Waning Crescent', emoji:'🌘', minDay:24.0,  maxDay:29.53,
+    desc:'The balsamic moon — a time of rest, surrender, and deep inner work. Withdraw from the outer world. Dream, listen to your intuition, and prepare for rebirth.',
+    url: p('1f716dcf716480b280b8d1b44504526f') },
 ];
 
 function getMoonAge(date) {
   const diff = (date - REF_NEW_MOON) / 86400000;
   return ((diff % SYNODIC) + SYNODIC) % SYNODIC;
-}
-
-function getIllumination(age) {
-  return Math.round((1 - Math.cos(2 * Math.PI * age / SYNODIC)) / 2 * 100);
-}
-
-function daysUntilNext(age, targetAge) {
-  let d = targetAge - age;
-  if (d < 0) d += SYNODIC;
-  return d;
 }
 
 function fmtDays(d) {
@@ -129,16 +122,11 @@ function fmtDays(d) {
 function renderMoon() {
   const now = new Date();
   const age = getMoonAge(now);
-  const phase = PHASES.find(p => age >= p.minDay && age < p.maxDay) || PHASES[0];
-  const illum = getIllumination(age);
-
-  // Next phase
-  const nextPhaseIdx = (PHASES.indexOf(phase) + 1) % PHASES.length;
-  const nextPhase = PHASES[nextPhaseIdx];
-  const daysToNext = daysUntilNext(age, nextPhase.minDay);
-
-  // Previous phase start
-  const dayInPhase = Math.round(age - phase.minDay);
+  const phase = PHASES.find(ph => age >= ph.minDay && age < ph.maxDay) || PHASES[0];
+  const illum = Math.round((1 - Math.cos(2 * Math.PI * age / SYNODIC)) / 2 * 100);
+  const nextPhase = PHASES[(PHASES.indexOf(phase) + 1) % PHASES.length];
+  let daysToNext = nextPhase.minDay - age;
+  if (daysToNext < 0) daysToNext += SYNODIC;
 
   document.getElementById('moonEmoji').textContent = phase.emoji;
   document.getElementById('moonName').textContent = phase.name;
@@ -146,132 +134,102 @@ function renderMoon() {
   document.getElementById('moonDesc').textContent = phase.desc;
   document.getElementById('moonLink').href = phase.url;
   document.getElementById('moonLink').textContent = `Open ${phase.name} Page`;
-  document.getElementById('moonPrev').textContent = `${dayInPhase === 0 ? 'Just entered' : Math.round(age - phase.minDay) + 'd into'} ${phase.name}`;
+  const dIn = Math.round(age - phase.minDay);
+  document.getElementById('moonPrev').textContent = `${dIn === 0 ? 'Just entered' : dIn + 'd into'} ${phase.name}`;
   document.getElementById('moonNextLabel').textContent = `${nextPhase.emoji} ${nextPhase.name} ${fmtDays(daysToNext)}`;
 }
 
-// ── Retrogrades ────────────────────────────────────────────────────────────
-const p = id => `https://app.notion.com/p/${id}`;
-const ASTRO = 'https://app.notion.com/p/28216dcf716480f9a3ced0b72e30a2a9'; // fallback
-
-const PLANET_URLS = {
-  Mercury: p('1f516dcf716481259c74da97a6cd02bc'),
-  Venus:   p('1f516dcf71648162b86bdab31c331af2'),
-  Mars:    p('1f516dcf716481a6bec0f56b08a4bd22'),
-  Jupiter: p('1f516dcf716481c1b361f64f8207961e'),
-  Saturn:  p('1f516dcf716481daa4e1d870b84cadad'),
-  Uranus:  ASTRO,
-  Neptune: ASTRO,
-  Pluto:   ASTRO,
-};
-
-const SYMBOLS = {
-  Mercury:'☿', Venus:'♀', Mars:'♂', Jupiter:'♃',
-  Saturn:'♄', Uranus:'⛢', Neptune:'♆', Pluto:'♇'
-};
-
-// Retrograde windows (start, end) — 2025–2027
-const RETROGRADES = [
-  // Mercury
-  { planet:'Mercury', start:'2025-11-09', end:'2025-11-29' },
-  { planet:'Mercury', start:'2026-03-15', end:'2026-04-07' },
-  { planet:'Mercury', start:'2026-07-18', end:'2026-08-11' },
-  { planet:'Mercury', start:'2026-11-11', end:'2026-12-01' },
-  { planet:'Mercury', start:'2027-03-04', end:'2027-03-27' },
-  // Venus
-  { planet:'Venus',   start:'2025-03-01', end:'2025-04-12' },
-  { planet:'Venus',   start:'2026-10-03', end:'2026-11-13' },
-  // Mars
-  { planet:'Mars',    start:'2024-12-06', end:'2025-02-23' },
-  { planet:'Mars',    start:'2027-01-12', end:'2027-04-01' },
-  // Jupiter
-  { planet:'Jupiter', start:'2025-07-11', end:'2025-11-20' },
-  { planet:'Jupiter', start:'2026-08-05', end:'2026-12-06' },
-  // Saturn
-  { planet:'Saturn',  start:'2025-07-13', end:'2025-11-27' },
-  { planet:'Saturn',  start:'2026-07-27', end:'2026-12-05' },
-  // Uranus
-  { planet:'Uranus',  start:'2025-09-06', end:'2026-02-03' },
-  { planet:'Uranus',  start:'2026-09-24', end:'2027-02-14' },
-  // Neptune
-  { planet:'Neptune', start:'2025-07-04', end:'2025-12-10' },
-  { planet:'Neptune', start:'2026-07-18', end:'2026-12-23' },
-  // Pluto
-  { planet:'Pluto',   start:'2025-05-05', end:'2025-10-13' },
-  { planet:'Pluto',   start:'2026-05-10', end:'2026-10-16' },
-  { planet:'Pluto',   start:'2027-05-14', end:'2027-10-19' },
+// ── Moon Sign ──────────────────────────────────────────────────────────────
+const SIGNS = [
+  { name:'Aries',       glyph:'♈', element:'Fire',  modality:'Cardinal',
+    desc:'The moon in Aries fires up instinct and impulse. Emotions are bold, fast, and direct. A potent time for spells of courage, new beginnings, and asserting your will.',
+    url: p('3dde6587a6e6444f975657afb7e44173') },
+  { name:'Taurus',      glyph:'♉', element:'Earth', modality:'Fixed',
+    desc:'The moon in Taurus grounds and stabilizes. Emotions are steady and sensual. Ideal for workings of abundance, beauty, comfort, and long-term manifestation.',
+    url: p('06b4388f012e40769bd2f24267ff995b') },
+  { name:'Gemini',      glyph:'♊', element:'Air',   modality:'Mutable',
+    desc:'The moon in Gemini quickens the mind and tongue. Emotions are curious and changeable. Favorable for communication spells, learning, writing, and divination.',
+    url: p('561de94a02a942588ebead7601655b4f') },
+  { name:'Cancer',      glyph:'♋', element:'Water', modality:'Cardinal',
+    desc:'The moon is at home in Cancer — her power is amplified. Emotions run deep and psychic sensitivity is heightened. A powerful time for intuition, home, and ancestral work.',
+    url: p('e3b977c652d64d48a0f146efac6bb1d2') },
+  { name:'Leo',         glyph:'♌', element:'Fire',  modality:'Fixed',
+    desc:'The moon in Leo brings dramatic, radiant energy. Emotions are expressive and generous. Ideal for confidence spells, creativity, recognition, and matters of the heart.',
+    url: p('0eeca55728784f61a2d187a55066f565') },
+  { name:'Virgo',       glyph:'♍', element:'Earth', modality:'Mutable',
+    desc:'The moon in Virgo calls for discernment and craft. Emotions are analytical and service-oriented. Excellent for healing work, cleansing, refining rituals, and practical magic.',
+    url: p('0e69a22d70554abd96676ce572b6f323') },
+  { name:'Libra',       glyph:'♎', element:'Air',   modality:'Cardinal',
+    desc:'The moon in Libra seeks harmony and beauty. Emotions are social and idealistic. A good time for love magic, partnership spells, justice workings, and aesthetic ritual.',
+    url: p('20a245c0a04240eb9988ba6402453608') },
+  { name:'Scorpio',     glyph:'♏', element:'Water', modality:'Fixed',
+    desc:'The moon in Scorpio dives into shadow and depth. Emotions are intense, psychic, and transformative. Powerfully suited to banishing, binding, sex magic, and shadow work.',
+    url: p('64dba5aeef91445fbf7c79c2c9ff67b0') },
+  { name:'Sagittarius', glyph:'♐', element:'Fire',  modality:'Mutable',
+    desc:'The moon in Sagittarius expands the horizon. Emotions are optimistic and freedom-seeking. Ideal for travel, luck, higher knowledge, spiritual seeking, and abundance.',
+    url: p('4881a6d9bb5c4b949b08d917b90cfb89') },
+  { name:'Capricorn',   glyph:'♑', element:'Earth', modality:'Cardinal',
+    desc:'The moon in Capricorn is sober and ambitious. Emotions are disciplined and determined. Well-suited for career and success spells, binding, long-term workings, and Saturn magic.',
+    url: p('75eb3f4502544386bf37fbc0a2c95536') },
+  { name:'Aquarius',    glyph:'♒', element:'Air',   modality:'Fixed',
+    desc:'The moon in Aquarius is unconventional and visionary. Emotions are detached but humanitarian. Favors group work, innovation, breaking patterns, and progressive intention-setting.',
+    url: p('17758445ccbc436993e1f147f6fdcd31') },
+  { name:'Pisces',      glyph:'♓', element:'Water', modality:'Mutable',
+    desc:'The moon in Pisces dissolves boundaries and opens the dreaming mind. Emotions are empathic and mystical. Deeply suited to dream work, psychic development, healing, and spiritual surrender.',
+    url: p('0509bcb658da4ddc99437b3ebd24132b') },
 ];
 
-function renderRetrogrades() {
+// Simplified but accurate moon longitude calculation
+function getMoonLongitude(date) {
+  const JD = date.getTime() / 86400000 + 2440587.5;
+  const T = (JD - 2451545.0) / 36525;
+  const rad = Math.PI / 180;
+
+  // Moon's mean longitude
+  const L0 = (218.3164477 + 481267.88123421 * T) % 360;
+  // Moon's mean anomaly
+  const M = (134.9633964 + 477198.8676313 * T) % 360;
+  // Moon's mean elongation
+  const D = (297.8501921 + 445267.1114034 * T) % 360;
+  // Sun's mean anomaly
+  const Ms = (357.5291092 + 35999.0502909 * T) % 360;
+  // Moon's argument of latitude
+  const F = (93.2720950 + 483202.0175233 * T) % 360;
+
+  // Longitude correction (degrees)
+  const dL = 6.288774 * Math.sin(M * rad)
+           + 1.274027 * Math.sin((2*D - M) * rad)
+           + 0.658314 * Math.sin(2*D * rad)
+           + 0.213618 * Math.sin(2*M * rad)
+           - 0.185116 * Math.sin(Ms * rad)
+           - 0.114332 * Math.sin(2*F * rad)
+           + 0.058793 * Math.sin((2*D - 2*M) * rad)
+           + 0.057066 * Math.sin((2*D - Ms - M) * rad)
+           + 0.053322 * Math.sin((2*D + M) * rad)
+           + 0.045758 * Math.sin((2*D - Ms) * rad);
+
+  let lon = ((L0 + dL) % 360 + 360) % 360;
+  return lon;
+}
+
+function renderSign() {
   const now = new Date();
-  const today = new Date(now); today.setHours(0,0,0,0);
+  const lon = getMoonLongitude(now);
+  const signIdx = Math.floor(lon / 30);
+  const degInSign = lon % 30;
+  const sign = SIGNS[signIdx];
 
-  const active = [], upcoming = [];
-
-  for (const r of RETROGRADES) {
-    const start = new Date(r.start);
-    const end   = new Date(r.end);
-    if (today >= start && today <= end) {
-      const daysLeft = Math.ceil((end - today) / 86400000);
-      active.push({ ...r, daysLeft, end });
-    } else if (start > today) {
-      const daysAway = Math.ceil((start - today) / 86400000);
-      upcoming.push({ ...r, daysAway, start, end });
-    }
-  }
-
-  // De-dupe upcoming by planet (keep soonest)
-  const seenPlanet = new Set();
-  const upcomingFiltered = [];
-  for (const r of upcoming.sort((a,b) => a.start - b.start)) {
-    if (!seenPlanet.has(r.planet)) {
-      seenPlanet.add(r.planet);
-      upcomingFiltered.push(r);
-    }
-  }
-
-  const fmtDate = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-
-  const activeEl = document.getElementById('activeRetro');
-  const upcomingEl = document.getElementById('upcomingRetro');
-
-  if (active.length === 0) {
-    activeEl.innerHTML = `<div class="none-msg">No planets currently in retrograde.</div>`;
-  } else {
-    activeEl.innerHTML = `<div class="section-label" style="margin-bottom:8px">Currently Retrograde</div><div class="retro-list">${
-      active.map(r => `
-        <div class="retro-item">
-          <div class="retro-planet">
-            <span class="retro-symbol">${SYMBOLS[r.planet]}</span>
-            <span class="retro-name">
-              <a href="${PLANET_URLS[r.planet]}" target="_blank" rel="noopener noreferrer">${r.planet}</a>
-              <span class="retro-badge">Rx</span>
-            </span>
-          </div>
-          <div class="retro-meta">Direct ${fmtDate(r.end)}<br>${r.daysLeft}d remaining</div>
-        </div>`).join('')
-    }</div>`;
-  }
-
-  if (upcomingFiltered.length > 0) {
-    document.getElementById('retroDivider').style.display = 'block';
-    upcomingEl.innerHTML = `<div class="section-label" style="margin-bottom:8px">Upcoming</div><div class="retro-list">${
-      upcomingFiltered.slice(0,4).map(r => `
-        <div class="retro-item retro-upcoming">
-          <div class="retro-planet">
-            <span class="retro-symbol">${SYMBOLS[r.planet]}</span>
-            <span class="retro-name">
-              <a href="${PLANET_URLS[r.planet]}" target="_blank" rel="noopener noreferrer">${r.planet}</a>
-            </span>
-          </div>
-          <div class="retro-meta">${fmtDate(r.start)} – ${fmtDate(r.end)}</div>
-        </div>`).join('')
-    }</div>`;
-  }
+  document.getElementById('signGlyph').textContent = sign.glyph;
+  document.getElementById('signName').textContent = `Moon in ${sign.name}`;
+  document.getElementById('signMeta').textContent =
+    `${Math.floor(degInSign)}° ${sign.name} · ${sign.element} · ${sign.modality}`;
+  document.getElementById('signDesc').textContent = sign.desc;
+  document.getElementById('signLink').href = sign.url;
+  document.getElementById('signLink').textContent = `Open Moon in ${sign.name} Page`;
 }
 
 renderMoon();
-renderRetrogrades();
+renderSign();
 </script>
 </body>
 </html>
