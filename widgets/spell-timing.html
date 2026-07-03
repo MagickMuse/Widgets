@@ -31,6 +31,7 @@
     cursor:pointer;margin-bottom:16px;
   }
   .styled-select:focus{outline:none;border-color:var(--accent);}
+  .tz-detected{font-size:.75rem;color:var(--muted);font-style:italic;text-align:center;margin:-10px 0 16px;}
 
   .find-btn{
     width:100%;padding:11px;border-radius:8px;
@@ -115,52 +116,7 @@
     <option value="peace">🕊️ Peace</option>
   </select>
 
-  <div class="field-label">Your time zone</div>
-  <select class="styled-select" id="tzSelect">
-    <optgroup label="Americas">
-      <option value="America/New_York">Eastern Time (ET)</option>
-      <option value="America/Chicago">Central Time (CT)</option>
-      <option value="America/Denver">Mountain Time (MT)</option>
-      <option value="America/Los_Angeles">Pacific Time (PT)</option>
-      <option value="America/Phoenix">Arizona (MST, no DST)</option>
-      <option value="America/Anchorage">Alaska Time</option>
-      <option value="Pacific/Honolulu">Hawaii Time</option>
-      <option value="America/Toronto">Toronto</option>
-      <option value="America/Vancouver">Vancouver</option>
-      <option value="America/Mexico_City">Mexico City</option>
-      <option value="America/Sao_Paulo">São Paulo</option>
-      <option value="America/Argentina/Buenos_Aires">Buenos Aires</option>
-    </optgroup>
-    <optgroup label="Europe">
-      <option value="Europe/London">London (GMT/BST)</option>
-      <option value="Europe/Dublin">Dublin</option>
-      <option value="Europe/Paris">Paris / Berlin / Rome</option>
-      <option value="Europe/Madrid">Madrid / Amsterdam</option>
-      <option value="Europe/Athens">Athens / Helsinki</option>
-      <option value="Europe/Istanbul">Istanbul</option>
-      <option value="Europe/Moscow">Moscow</option>
-    </optgroup>
-    <optgroup label="Africa &amp; Middle East">
-      <option value="Africa/Cairo">Cairo</option>
-      <option value="Africa/Johannesburg">Johannesburg</option>
-      <option value="Asia/Dubai">Dubai</option>
-      <option value="Asia/Jerusalem">Jerusalem</option>
-    </optgroup>
-    <optgroup label="Asia &amp; Pacific">
-      <option value="Asia/Kolkata">India (IST)</option>
-      <option value="Asia/Colombo">Sri Lanka</option>
-      <option value="Asia/Bangkok">Bangkok</option>
-      <option value="Asia/Singapore">Singapore / Kuala Lumpur</option>
-      <option value="Asia/Hong_Kong">Hong Kong</option>
-      <option value="Asia/Shanghai">China (CST)</option>
-      <option value="Asia/Tokyo">Tokyo</option>
-      <option value="Asia/Seoul">Seoul</option>
-      <option value="Australia/Perth">Perth</option>
-      <option value="Australia/Adelaide">Adelaide</option>
-      <option value="Australia/Sydney">Sydney / Melbourne</option>
-      <option value="Pacific/Auckland">Auckland</option>
-    </optgroup>
-  </select>
+  <div class="tz-detected" id="tzDetected"></div>
 
   <button class="find-btn" id="findBtn">Find Best Times</button>
 
@@ -238,14 +194,22 @@ function fmt12(h) {
   return `${h12}:00 ${ampm}`;
 }
 
+const DETECTED_TZ = (function(){
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e) { return 'UTC'; }
+})();
+
+(function(){
+  const el = document.getElementById('tzDetected');
+  if (el) el.textContent = 'Time zone: ' + DETECTED_TZ.replace(/_/g,' ');
+})();
+
 function run() {
   const key = document.getElementById('intentSelect').value;
-  const tz  = document.getElementById('tzSelect').value;
   if (!key) { alert('Please choose an intention first.'); return; }
 
   const intent = INTENTS[key];
   const good   = new Set(intent.planets);
-  const local  = localParts(tz);
+  const local  = localParts(DETECTED_TZ);
   const { dow, hour, minute } = local;
 
   // ── Best days ──────────────────────────────────────────────────────────────
@@ -318,18 +282,10 @@ function run() {
   document.getElementById('resultStage').style.display = 'block';
 }
 
-// Auto-detect timezone
-(function() {
-  try {
-    const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const sel = document.getElementById('tzSelect');
-    for (let i = 0; i < sel.options.length; i++) {
-      if (sel.options[i].value === detected) { sel.selectedIndex = i; break; }
-    }
-  } catch(e) {}
-})();
-
 document.getElementById('findBtn').addEventListener('click', run);
+document.getElementById('intentSelect').addEventListener('change', () => {
+  if (document.getElementById('intentSelect').value) run();
+});
 </script>
 </body>
 </html>
