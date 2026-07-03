@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spell Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fce8e6; --bg2:#f5d0cc;
+    --text:#3d1515; --muted:#8b4545;
+    --accent:#c0392b; --crimson:#a82222;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:transparent;}
+  body{margin:0;font-family:'EB Garamond',serif;color:var(--text);padding:16px;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;}
+  .wrap{max-width:440px;width:100%;text-align:center;background:var(--bg);border:1px solid rgba(160,37,36,.3);border-radius:14px;padding:24px 20px 20px;}
+  h1{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.8rem;font-style:italic;margin-bottom:22px;}
+
+  .intent-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:8px;}
+  .intent-select{
+    width:100%;padding:10px 14px;border-radius:8px;
+    border:1px solid rgba(160,37,36,.4);
+    background:#fff;color:var(--text);
+    font-family:'EB Garamond',serif;font-size:1rem;
+    appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b4545' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;
+    cursor:pointer;margin-bottom:14px;
+  }
+  .intent-select:focus{outline:none;border-color:var(--accent);}
+
+  .draw-btn{
+    width:100%;padding:11px;border-radius:8px;
+    background:var(--accent);color:#fff;border:none;
+    font-family:'Cinzel Decorative',serif;font-size:.85rem;letter-spacing:.05em;
+    cursor:pointer;transition:background .15s;margin-bottom:18px;
+  }
+  .draw-btn:hover{background:var(--crimson);}
+
+  #resultStage{display:none;}
+  .result-card{background:var(--bg2);border:1px solid rgba(160,37,36,.25);border-radius:12px;padding:20px 18px 16px;margin-bottom:14px;animation:fadeUp .4s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .result-intent{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:8px;}
+  .result-symbol{font-size:2.4rem;line-height:1;margin-bottom:8px;display:block;}
+  .result-name{font-family:'Cinzel Decorative',serif;font-size:1.05rem;letter-spacing:.03em;color:var(--text);line-height:1.4;margin-bottom:0;}
+
+  .btn-row{display:flex;gap:8px;}
+  .open-btn{
+    flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:transparent;border:1px solid rgba(160,37,36,.4);color:var(--muted);
+    padding:9px 14px;border-radius:6px;cursor:pointer;
+    font-family:'EB Garamond',serif;font-size:.85rem;letter-spacing:.03em;
+    text-decoration:none;transition:background .15s,color .15s,border-color .15s;
+  }
+  .open-btn:hover{background:rgba(192,57,43,.1);color:var(--text);border-color:var(--accent);}
+  .open-btn svg{width:13px;height:13px;opacity:.7;flex-shrink:0;}
+  .again-btn{
+    flex:1;background:transparent;border:1px solid rgba(160,37,36,.4);color:var(--text);
+    padding:9px 14px;border-radius:6px;cursor:pointer;
+    font-family:'EB Garamond',serif;font-size:.85rem;letter-spacing:.03em;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .again-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Spell Finder</h1>
+  <div class="sub">I need a spell for…</div>
+
+  <div class="intent-label">Choose your intention</div>
+  <select class="intent-select" id="intentSelect">
+    <option value="">— select an intention —</option>
+    <option value="protection">🛡️ Protection</option>
+    <option value="banishment">🚪 Banishment</option>
+    <option value="love">🌹 Love</option>
+    <option value="healing">💚 Healing &amp; Health</option>
+    <option value="money">🪙 Money &amp; Prosperity</option>
+    <option value="luck">🍀 Luck</option>
+    <option value="success">⭐ Success</option>
+    <option value="cleansing">🌊 Cleansing &amp; Purification</option>
+    <option value="courage">🔥 Courage</option>
+    <option value="peace">🕊️ Peace</option>
+  </select>
+
+  <button class="draw-btn" id="drawBtn">Draw a Spell</button>
+
+  <div id="resultStage">
+    <div class="result-card">
+      <div class="result-intent" id="resultIntent"></div>
+      <span class="result-symbol" id="resultSymbol"></span>
+      <div class="result-name" id="resultName"></div>
+    </div>
+    <div class="btn-row">
+      <a class="open-btn" id="openBtn" href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="1" width="10" height="13" rx="1"/>
+          <line x1="5" y1="5" x2="9" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="8" y2="11"/>
+        </svg>
+        Open Spell Page
+      </a>
+      <button class="again-btn" id="againBtn">Draw Another</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const p = id => `https://app.notion.com/p/${id}`;
+
+const SPELLS = {
+  protection: {
+    symbol: '🛡️', label: 'Protection',
+    spells: [
+      { name: "Midsummer's Protection Spell",         url: p('b0dfe01f06c44a5e96023e1ee87bfa05') },
+      { name: "A Protection Spell",                   url: p('3b779adf2c1b421eba2474e12ed88c0d') },
+      { name: "Protection Altar Spell",               url: p('354f91067ef64626aabf3f995fce378b') },
+      { name: "Fiery Wall of Protection Legal Spells",url: p('34b579fa44b148f78144cca328a97d32') },
+      { name: "Séance Protection Candle Spell",       url: p('6fed743cd95e4d9488ac22108516d6b4') },
+      { name: "Prison Guard Protection Spell",        url: p('cb55c75612024a3789ab1799a8b61d43') },
+      { name: "Home Protection Spell",                url: p('5f95e8792e94408db81b024f28dd8781') },
+      { name: "Isis Protection Spell",                url: p('780ba063a4934ba59c4711689437ec1a') },
+    ]
+  },
+  banishment: {
+    symbol: '🚪', label: 'Banishment',
+    spells: [
+      { name: "Out of My House Banishing Spell",        url: p('9843123f7e4840f98300528a9b51d3cf') },
+      { name: "Seven Knob Banishing Spell",             url: p('c9c9c4ad95064ddc925c37903b7f678f') },
+      { name: "Banishing Spell",                        url: p('939877c2d89d4e63bb7c62b05082e481') },
+      { name: "Banishment By Royal Decree Spell",       url: p('e3894af0006c4366b4a6cd477fe2a640') },
+      { name: "San Alejo Banishing Spell",              url: p('a5aac607693d43ef8e66dc4525995714') },
+      { name: "Pumpkin Magick Lamp Banishing Spell",    url: p('bc97950cd0994f80a6715b437210ef65') },
+      { name: "Everlasting End Banishing Spell",        url: p('df12d8a660d04e4bb6852ae5d1ab83a9') },
+      { name: "Maître Carrefour's Banishing Spell",     url: p('99611cfc10124f309195abcf8e7fd7bf') },
+    ]
+  },
+  love: {
+    symbol: '🌹', label: 'Love',
+    spells: [
+      { name: "A Love Spell",                          url: p('a3328f5c5e6540f788b913193136a637') },
+      { name: "Runic Love Talisman",                   url: p('b5e440d2a5e04bd58caeeb9a72410120') },
+      { name: "Egyptian Shrewmouse Love Spell",        url: p('72046fce533942379edb1f92bba619b4') },
+      { name: "Love Domination Spell",                 url: p('089aefdfab224cb2bf179f56e6423568') },
+      { name: "Simple Love Spell with Runes",          url: p('83a8de81b42d4e7da99b095f18abac72') },
+      { name: "Love Spell to Push Someone into Action",url: p('a465b2067bbb4068a704cc07803bf72a') },
+    ]
+  },
+  healing: {
+    symbol: '💚', label: 'Healing & Health',
+    spells: [
+      { name: "Healing Spell",                    url: p('a549227182534e8d9e5fc21df948482e') },
+      { name: "Absent Healing Ritual",            url: p('1b38cb09c39543e79354fb549f872a42') },
+      { name: "Health Spell",                     url: p('9480f7d536ff45868610a139db4e54c3') },
+      { name: "Healing Water Ritual",             url: p('5cefba8446b045f9b6676ae249dba429') },
+      { name: "Simple Water Health Healing Spell",url: p('46f81cbefce54fac9f5abcff8c85c90f') },
+      { name: "Healthy Clan Spell",               url: p('d8b84a3c61db4e90b12346e10bcbb73c') },
+    ]
+  },
+  money: {
+    symbol: '🪙', label: 'Money & Prosperity',
+    spells: [
+      { name: "Weaving Prosperity Spell",                    url: p('d47dc1b08c23494e884152accf0cf39d') },
+      { name: "Abundance Potion",                            url: p('c8b5a8fdab92410693c8f8b0e60751c7') },
+      { name: "Prosperity Potion",                           url: p('32dc8c4a752f420eae27f1e102d257cc') },
+      { name: "Calling Abundance",                           url: p('25916dcf716480da8e28e32873b90f84') },
+      { name: "Creating an Herbal Money Tree",               url: p('edbbaae6f1834e0ebec8b88e929c859e') },
+      { name: "Prosperity Spell Bag Financial Papers",       url: p('15dc49f1461e41f3be658df1e4c4b8cb') },
+      { name: "Money-Drawing Potion",                        url: p('0b3c8c0f0d7f46028baeabf6b4ef0a2a') },
+      { name: "Money Spell",                                 url: p('f08bb2826af746159ec65af0206e27e8') },
+    ]
+  },
+  luck: {
+    symbol: '🍀', label: 'Luck',
+    spells: [
+      { name: "The Lucky Hand Ritual",                    url: p('94bbf9e2bf96422f90073705c71c8791') },
+      { name: "Good Luck Potion",                         url: p('ca86d24dcb5f40398cf37322df93e9b3') },
+      { name: "Scandinavian Good Luck Home Ritual",       url: p('a20ff7fb4bad41c6b858e6302445e5ef') },
+      { name: "Lucky Bamboo All the Luck in World Spell", url: p('2af99c9138d74850b12816d1117eac59') },
+    ]
+  },
+  success: {
+    symbol: '⭐', label: 'Success',
+    spells: [
+      { name: "Success Potion",                    url: p('31108a5701004f4c80d735b641402e86') },
+      { name: "Don't Sabotage My Success Spell",   url: p('00431f300b5a4c85961d5042116bb8dc') },
+      { name: "Personal Blessings Ritual",         url: p('df49441ce0924d97ad63d1f3251f080b') },
+    ]
+  },
+  cleansing: {
+    symbol: '🌊', label: 'Cleansing & Purification',
+    spells: [
+      { name: "A Cleansing Ritual",                url: p('021461f41da349d291aba0bddb679957') },
+      { name: "New Moon House Cleansing Ritual",   url: p('6e682690df7c4bed95dddd877a06f985') },
+      { name: "Cleansing Crystals with Fire",      url: p('d04887f0c493428db9866386cca4b997') },
+      { name: "Sacred Cleansing Fumigation Spell", url: p('f0338089ed8f4263bc5727536d1154ba') },
+      { name: "Cleansing Crystals with Air",       url: p('b65defff14ae44849d0ca90c712b30e0') },
+      { name: "Cleansing Crystals with Water",     url: p('904ee9b1ff344ca98c9ed972cb33500d') },
+      { name: "Stone Purification Ritual",         url: p('09d0e936661b4b9ab3d63dd075795838') },
+      { name: "Sacred Space Purification Spell",   url: p('a646f4fc8f9b4e39a17572d716e68c7b') },
+    ]
+  },
+  courage: {
+    symbol: '🔥', label: 'Courage',
+    spells: [
+      { name: "Enhancing Courage Spell",     url: p('5a4292946e1647d38cf538fb011517a8') },
+      { name: "Courage Potion",              url: p('5d85f79e854f401eadb6f3d2cdbd444d') },
+      { name: "Movement Ritual for Courage", url: p('ace0a8b971dc4869af537d75c5bd684a') },
+      { name: "Courage for Peace Organizations", url: p('cc90417702fe499daae416a02b849ed1') },
+    ]
+  },
+  peace: {
+    symbol: '🕊️', label: 'Peace',
+    spells: [
+      { name: "King of Peace Seven-Day Spell", url: p('74f5c02b1a1541c89835fe5dfefc7cd5') },
+      { name: "Peace Potion",                  url: p('b76d455ee0764fb7b8320a4287378798') },
+      { name: "Peaceful Parting Spell",        url: p('fda613e4a7914e7db43da840e5c5ccad') },
+    ]
+  },
+};
+
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function draw(){
+  const key = document.getElementById('intentSelect').value;
+  if (!key){ alert('Please choose an intention first.'); return; }
+  const cat = SPELLS[key];
+  const spell = pick(cat.spells);
+
+  document.getElementById('resultIntent').textContent = cat.label;
+  document.getElementById('resultSymbol').textContent = cat.symbol;
+  document.getElementById('resultName').textContent = spell.name;
+  document.getElementById('openBtn').href = spell.url;
+
+  const stage = document.getElementById('resultStage');
+  stage.style.display = 'block';
+  // re-trigger animation
+  const card = stage.querySelector('.result-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = '';
+}
+
+document.getElementById('drawBtn').addEventListener('click', draw);
+document.getElementById('againBtn').addEventListener('click', draw);
+</script>
+</body>
+</html>
