@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spell Timing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fce8e6; --bg2:#f5d0cc;
+    --text:#3d1515; --muted:#8b4545;
+    --accent:#c0392b; --crimson:#a82222;
+  }
+  *{box-sizing:border-box;}
+  html,body{background:transparent;}
+  body{margin:0;font-family:'EB Garamond',serif;color:var(--text);padding:16px;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;}
+  .wrap{max-width:440px;width:100%;text-align:center;background:var(--bg);border:1px solid rgba(160,37,36,.3);border-radius:14px;padding:24px 20px 20px;}
+  h1{font-family:'Cinzel Decorative',serif;font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.8rem;font-style:italic;margin-bottom:22px;}
+
+  .field-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:6px;text-align:left;}
+  .styled-select{
+    width:100%;padding:10px 14px;border-radius:8px;
+    border:1px solid rgba(160,37,36,.4);
+    background:#fff;color:var(--text);
+    font-family:'EB Garamond',serif;font-size:1rem;
+    appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b4545' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;
+    cursor:pointer;margin-bottom:16px;
+  }
+  .styled-select:focus{outline:none;border-color:var(--accent);}
+
+  .find-btn{
+    width:100%;padding:11px;border-radius:8px;
+    background:var(--accent);color:#fff;border:none;
+    font-family:'Cinzel Decorative',serif;font-size:.85rem;letter-spacing:.05em;
+    cursor:pointer;transition:background .15s;margin-bottom:18px;
+  }
+  .find-btn:hover{background:var(--crimson);}
+
+  #resultStage{display:none;}
+
+  .card{background:var(--bg2);border:1px solid rgba(160,37,36,.25);border-radius:12px;padding:18px 16px 14px;margin-bottom:12px;text-align:left;animation:fadeUp .4s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .card-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:10px;}
+
+  /* Days row */
+  .days-row{display:flex;gap:5px;justify-content:space-between;}
+  .day-pill{
+    flex:1;text-align:center;border-radius:8px;padding:7px 2px;
+    border:1px solid rgba(160,37,36,.2);background:rgba(160,37,36,.04);
+    font-size:.72rem;color:var(--muted);line-height:1.3;
+  }
+  .day-pill.good{
+    background:rgba(192,57,43,.14);border-color:rgba(192,57,43,.4);
+    color:var(--text);font-weight:600;
+  }
+  .day-pill.today-marker{box-shadow:0 0 0 2px var(--accent);}
+  .day-pill .dp-name{display:block;font-size:.65rem;margin-bottom:2px;}
+  .day-pill .dp-sym{display:block;font-size:.9rem;}
+
+  /* Hours list */
+  .hours-list{display:flex;flex-direction:column;gap:5px;}
+  .hour-row{
+    display:flex;align-items:center;gap:10px;
+    border-radius:7px;padding:7px 10px;
+    background:rgba(160,37,36,.04);border:1px solid rgba(160,37,36,.12);
+    font-size:.88rem;
+  }
+  .hour-row.good{
+    background:rgba(192,57,43,.13);border-color:rgba(192,57,43,.35);
+  }
+  .hour-row.now{box-shadow:0 0 0 2px var(--accent);}
+  .hr-time{width:90px;flex-shrink:0;color:var(--text);}
+  .hr-planet{flex:1;color:var(--muted);font-size:.82rem;}
+  .hr-planet.good{color:var(--accent);}
+  .hr-sym{font-size:1rem;width:18px;flex-shrink:0;}
+
+  .next-banner{
+    background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);
+    border-radius:10px;padding:12px 14px;margin-bottom:12px;
+    font-size:.9rem;line-height:1.5;
+    animation:fadeUp .4s ease both;
+  }
+  .next-banner strong{color:var(--accent);font-family:'Cinzel Decorative',serif;font-size:.85rem;letter-spacing:.03em;}
+
+  .planet-key{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+  .pk-chip{font-size:.75rem;padding:3px 8px;border-radius:12px;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.25);color:var(--muted);}
+  .pk-chip.highlighted{background:rgba(192,57,43,.2);border-color:var(--accent);color:var(--text);}
+
+  .divider{height:1px;background:rgba(160,37,36,.2);margin:14px 0;}
+  .note{font-size:.75rem;color:var(--muted);font-style:italic;text-align:center;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Spell Timing</h1>
+  <div class="sub">Find the most auspicious day &amp; hour for your work</div>
+
+  <div class="field-label">Choose your intention</div>
+  <select class="styled-select" id="intentSelect">
+    <option value="">— select an intention —</option>
+    <option value="protection">🛡️ Protection</option>
+    <option value="banishment">🚪 Banishment</option>
+    <option value="love">🌹 Love</option>
+    <option value="healing">💚 Healing &amp; Health</option>
+    <option value="money">🪙 Money &amp; Prosperity</option>
+    <option value="luck">🍀 Luck</option>
+    <option value="success">⭐ Success</option>
+    <option value="cleansing">🌊 Cleansing &amp; Purification</option>
+    <option value="courage">🔥 Courage</option>
+    <option value="peace">🕊️ Peace</option>
+  </select>
+
+  <div class="field-label">Your time zone</div>
+  <select class="styled-select" id="tzSelect">
+    <optgroup label="Americas">
+      <option value="America/New_York">Eastern Time (ET)</option>
+      <option value="America/Chicago">Central Time (CT)</option>
+      <option value="America/Denver">Mountain Time (MT)</option>
+      <option value="America/Los_Angeles">Pacific Time (PT)</option>
+      <option value="America/Phoenix">Arizona (MST, no DST)</option>
+      <option value="America/Anchorage">Alaska Time</option>
+      <option value="Pacific/Honolulu">Hawaii Time</option>
+      <option value="America/Toronto">Toronto</option>
+      <option value="America/Vancouver">Vancouver</option>
+      <option value="America/Mexico_City">Mexico City</option>
+      <option value="America/Sao_Paulo">São Paulo</option>
+      <option value="America/Argentina/Buenos_Aires">Buenos Aires</option>
+    </optgroup>
+    <optgroup label="Europe">
+      <option value="Europe/London">London (GMT/BST)</option>
+      <option value="Europe/Dublin">Dublin</option>
+      <option value="Europe/Paris">Paris / Berlin / Rome</option>
+      <option value="Europe/Madrid">Madrid / Amsterdam</option>
+      <option value="Europe/Athens">Athens / Helsinki</option>
+      <option value="Europe/Istanbul">Istanbul</option>
+      <option value="Europe/Moscow">Moscow</option>
+    </optgroup>
+    <optgroup label="Africa &amp; Middle East">
+      <option value="Africa/Cairo">Cairo</option>
+      <option value="Africa/Johannesburg">Johannesburg</option>
+      <option value="Asia/Dubai">Dubai</option>
+      <option value="Asia/Jerusalem">Jerusalem</option>
+    </optgroup>
+    <optgroup label="Asia &amp; Pacific">
+      <option value="Asia/Kolkata">India (IST)</option>
+      <option value="Asia/Colombo">Sri Lanka</option>
+      <option value="Asia/Bangkok">Bangkok</option>
+      <option value="Asia/Singapore">Singapore / Kuala Lumpur</option>
+      <option value="Asia/Hong_Kong">Hong Kong</option>
+      <option value="Asia/Shanghai">China (CST)</option>
+      <option value="Asia/Tokyo">Tokyo</option>
+      <option value="Asia/Seoul">Seoul</option>
+      <option value="Australia/Perth">Perth</option>
+      <option value="Australia/Adelaide">Adelaide</option>
+      <option value="Australia/Sydney">Sydney / Melbourne</option>
+      <option value="Pacific/Auckland">Auckland</option>
+    </optgroup>
+  </select>
+
+  <button class="find-btn" id="findBtn">Find Best Times</button>
+
+  <div id="resultStage">
+
+    <div class="card" id="daysCard">
+      <div class="card-label">Best Days of the Week</div>
+      <div class="days-row" id="daysRow"></div>
+    </div>
+
+    <div id="nextBanner" class="next-banner" style="display:none"></div>
+
+    <div class="card" id="hoursCard">
+      <div class="card-label" id="hoursLabel">Today's Planetary Hours</div>
+      <div class="hours-list" id="hoursList"></div>
+    </div>
+
+    <p class="note">Hours approximate equal hours: sunrise ≈ 6 am, sunset ≈ 6 pm</p>
+  </div>
+</div>
+
+<script>
+const CHALDEAN   = ['Saturn','Jupiter','Mars','Sun','Venus','Mercury','Moon'];
+const SYM        = {Saturn:'♄',Jupiter:'♃',Mars:'♂',Sun:'☉',Venus:'♀',Mercury:'☿',Moon:'☽'};
+const DAY_PLANET = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn']; // weekday 0-6 ruling planet
+// Index into CHALDEAN for hour-0 (sunrise) of each weekday (0=Sun..6=Sat)
+const DAY_START  = [3, 6, 2, 5, 1, 4, 0];
+const DAY_NAMES  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_SHORT  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+const INTENTS = {
+  protection:{ symbol:'🛡️', label:'Protection',             planets:['Saturn','Mars'] },
+  banishment:{ symbol:'🚪', label:'Banishment',             planets:['Saturn','Mars'] },
+  love:      { symbol:'🌹', label:'Love',                   planets:['Venus','Moon'] },
+  healing:   { symbol:'💚', label:'Healing & Health',       planets:['Sun','Moon','Jupiter'] },
+  money:     { symbol:'🪙', label:'Money & Prosperity',     planets:['Jupiter','Venus','Sun'] },
+  luck:      { symbol:'🍀', label:'Luck',                   planets:['Jupiter','Sun'] },
+  success:   { symbol:'⭐', label:'Success',                planets:['Sun','Jupiter'] },
+  cleansing: { symbol:'🌊', label:'Cleansing & Purification', planets:['Moon','Saturn'] },
+  courage:   { symbol:'🔥', label:'Courage',                planets:['Mars','Sun'] },
+  peace:     { symbol:'🕊️', label:'Peace',                  planets:['Moon','Venus'] },
+};
+
+// Planet ruling a given weekday (0=Sun) at a given clock hour (0–23)
+// Approximation: day hours start at 6 am
+function getPlanet(dow, clockHour) {
+  let h = clockHour - 6;
+  let d = dow;
+  if (h < 0) { d = (d + 6) % 7; h += 24; }
+  return CHALDEAN[(DAY_START[d] + h) % 7];
+}
+
+// Parse local date/time parts for a timezone
+function localParts(tz) {
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false,
+    year:'numeric', month:'numeric', day:'numeric'
+  });
+  const p = {};
+  fmt.formatToParts(now).forEach(x => { p[x.type] = x.value; });
+  const shortMap = {Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+  return {
+    dow:    shortMap[p.weekday],
+    hour:   parseInt(p.hour === '24' ? 0 : p.hour),
+    minute: parseInt(p.minute),
+    dayName: DAY_NAMES[shortMap[p.weekday]]
+  };
+}
+
+function fmt12(h) {
+  const ampm = h < 12 ? 'am' : 'pm';
+  const h12  = h % 12 || 12;
+  return `${h12}:00 ${ampm}`;
+}
+
+function run() {
+  const key = document.getElementById('intentSelect').value;
+  const tz  = document.getElementById('tzSelect').value;
+  if (!key) { alert('Please choose an intention first.'); return; }
+
+  const intent = INTENTS[key];
+  const good   = new Set(intent.planets);
+  const local  = localParts(tz);
+  const { dow, hour, minute } = local;
+
+  // ── Best days ──────────────────────────────────────────────────────────────
+  const daysRow = document.getElementById('daysRow');
+  daysRow.innerHTML = '';
+  for (let d = 0; d < 7; d++) {
+    const ruling = DAY_PLANET[d];
+    const isGood = good.has(ruling);
+    const isToday = d === dow;
+    const pill = document.createElement('div');
+    pill.className = 'day-pill' + (isGood ? ' good' : '') + (isToday ? ' today-marker' : '');
+    pill.innerHTML = `<span class="dp-name">${DAY_SHORT[d]}</span><span class="dp-sym">${SYM[ruling]}</span>`;
+    pill.title = `${DAY_NAMES[d]} — ${ruling}`;
+    daysRow.appendChild(pill);
+  }
+
+  // ── Today's hours ──────────────────────────────────────────────────────────
+  document.getElementById('hoursLabel').textContent = `${local.dayName}'s Planetary Hours`;
+  const hoursList = document.getElementById('hoursList');
+  hoursList.innerHTML = '';
+  const currentHr = hour + (minute / 60);
+
+  for (let h = 0; h < 24; h++) {
+    const planet  = getPlanet(dow, h);
+    const isGood  = good.has(planet);
+    const isNow   = h === hour;
+    const row = document.createElement('div');
+    row.className = 'hour-row' + (isGood ? ' good' : '') + (isNow ? ' now' : '');
+    row.innerHTML =
+      `<span class="hr-sym">${SYM[planet]}</span>` +
+      `<span class="hr-time">${fmt12(h)} – ${fmt12((h+1) % 24)}</span>` +
+      `<span class="hr-planet${isGood ? ' good' : ''}">${planet}${isGood ? ' ✦' : ''}</span>`;
+    hoursList.appendChild(row);
+  }
+
+  // ── Next best window banner ────────────────────────────────────────────────
+  const banner = document.getElementById('nextBanner');
+  const currentPlanet = getPlanet(dow, hour);
+  if (good.has(currentPlanet)) {
+    banner.innerHTML = `<strong>Now is auspicious.</strong> You are currently in a ${SYM[currentPlanet]} ${currentPlanet} hour on ${local.dayName}. A fine time to begin.`;
+    banner.style.display = 'block';
+  } else {
+    // Find next good slot across this week
+    let found = null;
+    outer:
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const d = (dow + dayOffset) % 7;
+      for (let h = 0; h < 24; h++) {
+        if (dayOffset === 0 && h <= hour) continue; // already past today
+        if (good.has(getPlanet(d, h))) {
+          found = { d, h };
+          break outer;
+        }
+      }
+    }
+    if (found) {
+      const fPlanet = getPlanet(found.d, found.h);
+      const dayStr  = found.d === dow ? 'today' : (found.d === (dow+1)%7 ? 'tomorrow' : `on ${DAY_NAMES[found.d]}`);
+      banner.innerHTML = `<strong>Next opportunity:</strong> ${dayStr} at ${fmt12(found.h)} — ${SYM[fPlanet]} ${fPlanet} hour`;
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  // Scroll today's hours into view
+  const nowRow = hoursList.querySelector('.now');
+  if (nowRow) nowRow.scrollIntoView({ block:'nearest', behavior:'smooth' });
+
+  document.getElementById('resultStage').style.display = 'block';
+}
+
+// Auto-detect timezone
+(function() {
+  try {
+    const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const sel = document.getElementById('tzSelect');
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === detected) { sel.selectedIndex = i; break; }
+    }
+  } catch(e) {}
+})();
+
+document.getElementById('findBtn').addEventListener('click', run);
+</script>
+</body>
+</html>
